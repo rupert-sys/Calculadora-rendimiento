@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/finanzas/rendimiento.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -13,12 +15,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   double resultado = 0;
 
+  @override
+  void dispose() {
+    montoCtrl.dispose();
+    porcentajeCtrl.dispose();
+    super.dispose();
+  }
+
   void calcular() {
     final double monto = double.tryParse(montoCtrl.text) ?? 0;
     final double porcentaje = double.tryParse(porcentajeCtrl.text) ?? 0;
 
     setState(() {
-      resultado = monto * (porcentaje / 100);
+      resultado = calcularGanancia(monto, porcentaje);
     });
   }
 
