@@ -35,6 +35,9 @@ lib/
   data/                     base de datos local (Drift + SQLite) y proveedores de Riverpod
   features/resumen/         resumen del mes por categoría
   features/movimientos/     lista y formulario de ingresos y egresos
+  features/inversiones/     inversiones con proyección a 1, 5 y 10 años
+  features/tarjetas/        tarjetas de crédito y comparador de pagos
+  features/comun/           campos y textos compartidos
   features/rendimiento/     pantalla de cálculo de rendimiento
 test/                       pruebas unitarias y de widgets
 android/                    proyecto Android generado por Flutter
