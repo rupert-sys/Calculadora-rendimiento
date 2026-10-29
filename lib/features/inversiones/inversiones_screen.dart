@@ -6,6 +6,7 @@ import '../../core/finanzas/inversion.dart';
 import '../../core/finanzas/modelos.dart';
 import '../../data/proveedores.dart';
 import '../comun/campos.dart';
+import '../rendimiento/home_screen.dart';
 import 'inversion_form_screen.dart';
 
 class InversionesScreen extends ConsumerWidget {
@@ -22,7 +23,18 @@ class InversionesScreen extends ConsumerWidget {
     final inversiones = ref.watch(inversionesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Inversiones')),
+      appBar: AppBar(
+        title: const Text('Inversiones'),
+        actions: [
+          IconButton(
+            tooltip: 'Calculadora rápida',
+            icon: const Icon(Icons.calculate_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const HomeScreen()),
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'agregar-inversiones',
         onPressed: () => _abrir(context),

@@ -7,4 +7,5 @@ export 'flujo.dart';
 export 'inversion.dart';
 export 'modelos.dart';
 export 'rendimiento.dart';
+export 'simulador.dart';
 export 'tarjeta.dart';

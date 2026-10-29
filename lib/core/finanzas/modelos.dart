@@ -113,6 +113,9 @@ class Escenario {
     required this.nombre,
     required this.anios,
     this.inflacionAnual = inflacionPorDefecto,
+    this.ajusteIngresos = 0,
+    this.ajusteEgresos = 0,
+    this.pagoExtraTarjetas = 0,
   }) : assert(anios >= 1 && anios <= 30);
 
   final String nombre;
@@ -120,4 +123,31 @@ class Escenario {
 
   /// Inflación anual como fracción: 0.04 = 4 %.
   final double inflacionAnual;
+
+  /// "Qué pasa si": cambio en los ingresos, como fracción (0.1 = 10 % más).
+  final double ajusteIngresos;
+
+  /// "Qué pasa si": cambio en los egresos, como fracción (-0.1 = 10 % menos).
+  final double ajusteEgresos;
+
+  /// Pago adicional al mínimo que se abona cada mes a las tarjetas.
+  final Centavos pagoExtraTarjetas;
+
+  Escenario copyWith({
+    String? nombre,
+    int? anios,
+    double? inflacionAnual,
+    double? ajusteIngresos,
+    double? ajusteEgresos,
+    Centavos? pagoExtraTarjetas,
+  }) {
+    return Escenario(
+      nombre: nombre ?? this.nombre,
+      anios: anios ?? this.anios,
+      inflacionAnual: inflacionAnual ?? this.inflacionAnual,
+      ajusteIngresos: ajusteIngresos ?? this.ajusteIngresos,
+      ajusteEgresos: ajusteEgresos ?? this.ajusteEgresos,
+      pagoExtraTarjetas: pagoExtraTarjetas ?? this.pagoExtraTarjetas,
+    );
+  }
 }

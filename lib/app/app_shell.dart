@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../features/inversiones/inversiones_screen.dart';
 import '../features/movimientos/movimientos_screen.dart';
-import '../features/rendimiento/home_screen.dart';
 import '../features/resumen/resumen_screen.dart';
+import '../features/simulador/simulador_screen.dart';
 import '../features/tarjetas/tarjetas_screen.dart';
 
 /// Navegación principal: barra inferior en teléfono, menú lateral en
@@ -26,7 +26,7 @@ class _AppShellState extends State<AppShell> {
     MovimientosScreen(),
     InversionesScreen(),
     TarjetasScreen(),
-    HomeScreen(),
+    SimuladorScreen(),
   ];
 
   static const _destinos = [
@@ -51,9 +51,9 @@ class _AppShellState extends State<AppShell> {
       texto: 'Tarjetas'
     ),
     (
-      icono: Icons.calculate_outlined,
-      seleccionado: Icons.calculate,
-      texto: 'Rápida'
+      icono: Icons.show_chart,
+      seleccionado: Icons.show_chart,
+      texto: 'Simulador'
     ),
   ];
 
