@@ -30,13 +30,25 @@ GitHub Actions corre estos tres pasos en cada PR y deja el APK como artefacto de
 lib/
   main.dart                 punto de entrada (ProviderScope de Riverpod)
   app/app.dart              MaterialApp y tema
+  app/app_shell.dart        navegación: barra inferior en teléfono, menú lateral en tablet
   core/finanzas/            fórmulas en Dart puro, sin interfaz
+  data/                     base de datos local (Drift + SQLite) y proveedores de Riverpod
+  features/resumen/         resumen del mes por categoría
+  features/movimientos/     lista y formulario de ingresos y egresos
   features/rendimiento/     pantalla de cálculo de rendimiento
 test/                       pruebas unitarias y de widgets
 android/                    proyecto Android generado por Flutter
 ```
 
 Cada módulo nuevo (ingresos, egresos, inversiones, tarjeta, simulador) va en su propia carpeta dentro de `lib/features/`, y sus fórmulas en `lib/core/finanzas/` con su prueba en `test/core/`.
+
+## Base de datos
+
+El esquema está en `lib/data/base_datos.dart`. Después de cambiarlo, regenera el código:
+
+```bash
+dart run build_runner build
+```
 
 ## Otras plataformas
 

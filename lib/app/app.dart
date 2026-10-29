@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../features/rendimiento/home_screen.dart';
+import 'app_shell.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
         colorSchemeSeed: Colors.green,
         brightness: Brightness.dark,
       ),
-      home: const HomeScreen(),
+      home: const AppShell(),
     );
   }
 }
