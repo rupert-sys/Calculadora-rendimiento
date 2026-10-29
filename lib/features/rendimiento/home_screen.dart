@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/finanzas/dinero.dart';
 import '../../core/finanzas/rendimiento.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -45,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
               controller: montoCtrl,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                labelText: 'Monto inicial',
+                labelText: 'Monto inicial (MXN)',
               ),
             ),
             const SizedBox(height: 10),
@@ -63,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 20),
             Text(
-              'Ganancia: \$${resultado.toStringAsFixed(2)}',
+              'Ganancia: ${formatearPesos(aCentavos(resultado))} $codigoMoneda',
               style: const TextStyle(fontSize: 22),
             ),
           ],
