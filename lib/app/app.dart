@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+import '../features/rendimiento/home_screen.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -13,6 +10,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Calculadora de Rendimiento',
+      theme: ThemeData(
+        colorSchemeSeed: Colors.green,
+      ),
+      darkTheme: ThemeData(
+        colorSchemeSeed: Colors.green,
+        brightness: Brightness.dark,
+      ),
       home: const HomeScreen(),
     );
   }
