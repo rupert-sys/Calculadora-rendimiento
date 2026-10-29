@@ -19,12 +19,48 @@ class Movimientos extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [Movimientos])
+/// Inversiones. Las tasas se guardan como fracción: 0.08 = 8 %.
+@DataClassName('InversionFila')
+class Inversiones extends Table {
+  TextColumn get id => text()();
+  TextColumn get nombre => text()();
+  IntColumn get saldoInicialCentavos => integer()();
+  RealColumn get tasaAnual => real()();
+  IntColumn get aporteMensualCentavos => integer()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('TarjetaFila')
+class Tarjetas extends Table {
+  TextColumn get id => text()();
+  TextColumn get nombre => text()();
+  IntColumn get saldoCentavos => integer()();
+  RealColumn get tasaAnual => real()();
+  RealColumn get pagoMinimoPorcentaje => real()();
+  IntColumn get pagoMinimoFijoCentavos => integer()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DriftDatabase(tables: [Movimientos, Inversiones, Tarjetas])
 class BaseDatos extends _$BaseDatos {
   BaseDatos([QueryExecutor? executor]) : super(executor ?? _abrir());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, desde, hasta) async {
+          if (desde < 2) {
+            await m.createTable(inversiones);
+            await m.createTable(tarjetas);
+          }
+        },
+      );
 
   /// SQLite local en Android, iOS, escritorio y web.
   static QueryExecutor _abrir() {

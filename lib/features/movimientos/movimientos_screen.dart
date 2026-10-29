@@ -23,6 +23,7 @@ class MovimientosScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Movimientos')),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'agregar-movimientos',
         onPressed: () => _abrirFormulario(context),
         icon: const Icon(Icons.add),
         label: const Text('Agregar'),

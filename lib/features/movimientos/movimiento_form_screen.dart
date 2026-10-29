@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/finanzas/dinero.dart';
 import '../../core/finanzas/modelos.dart';
 import '../../data/proveedores.dart';
+import '../comun/campos.dart';
 import 'movimientos_screen.dart';
 import 'textos.dart';
 
@@ -221,7 +222,3 @@ class _MovimientoFormScreenState extends ConsumerState<MovimientoFormScreen> {
     );
   }
 }
-
-/// Lee "1,234.50" o "1234.5"; `null` si no es un número.
-double? leerMonto(String texto) =>
-    double.tryParse(texto.replaceAll(',', '').trim());
