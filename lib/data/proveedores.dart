@@ -49,3 +49,27 @@ final tarjetasRepositorioProvider = Provider<TarjetasRepositorio>(
 final tarjetasProvider = StreamProvider<List<TarjetaCredito>>(
   (ref) => ref.watch(tarjetasRepositorioProvider).observarTodas(),
 );
+
+/// Movimientos, inversiones y tarjetas juntos, para el simulador.
+final datosSimulacionProvider = Provider<
+    AsyncValue<
+        ({
+          List<Movimiento> movimientos,
+          List<Inversion> inversiones,
+          List<TarjetaCredito> tarjetas,
+        })>>((ref) {
+  final movs = ref.watch(movimientosProvider);
+  final invs = ref.watch(inversionesProvider);
+  final tars = ref.watch(tarjetasProvider);
+  for (final v in [movs, invs, tars]) {
+    if (v.hasError) return AsyncValue.error(v.error!, v.stackTrace!);
+  }
+  if (!movs.hasValue || !invs.hasValue || !tars.hasValue) {
+    return const AsyncValue.loading();
+  }
+  return AsyncValue.data((
+    movimientos: movs.requireValue,
+    inversiones: invs.requireValue,
+    tarjetas: tars.requireValue,
+  ));
+});

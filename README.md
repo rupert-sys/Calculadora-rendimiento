@@ -37,6 +37,7 @@ lib/
   features/movimientos/     lista y formulario de ingresos y egresos
   features/inversiones/     inversiones con proyección a 1, 5 y 10 años
   features/tarjetas/        tarjetas de crédito y comparador de pagos
+  features/simulador/       proyección de patrimonio y escenarios "qué pasa si"
   features/comun/           campos y textos compartidos
   features/rendimiento/     pantalla de cálculo de rendimiento
 test/                       pruebas unitarias y de widgets

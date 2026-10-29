@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/finanzas/dinero.dart';
 import '../../core/finanzas/flujo.dart';
 import '../../data/proveedores.dart';
+import '../../core/finanzas/modelos.dart';
 import '../movimientos/textos.dart';
+import 'grafica_flujo.dart';
 
 class ResumenScreen extends ConsumerWidget {
   const ResumenScreen({super.key});
@@ -47,7 +49,12 @@ class ResumenScreen extends ConsumerWidget {
           resumen.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Text('No se pudo calcular: $e'),
-            data: (r) => _Contenido(resumen: r),
+            data: (r) => _Contenido(
+              resumen: r,
+              movimientos:
+                  ref.watch(movimientosProvider).valueOrNull ?? const [],
+              mes: mes,
+            ),
           ),
         ],
       ),
@@ -56,9 +63,15 @@ class ResumenScreen extends ConsumerWidget {
 }
 
 class _Contenido extends StatelessWidget {
-  const _Contenido({required this.resumen});
+  const _Contenido({
+    required this.resumen,
+    required this.movimientos,
+    required this.mes,
+  });
 
   final ResumenMensual resumen;
+  final List<Movimiento> movimientos;
+  final DateTime mes;
 
   @override
   Widget build(BuildContext context) {
@@ -83,6 +96,13 @@ class _Contenido extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 24),
+        if (movimientos.isNotEmpty) ...[
+          Text('Últimos 6 meses',
+              style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          GraficaFlujo(movimientos: movimientos, hasta: mes),
+          const SizedBox(height: 24),
+        ],
         Text('Por categoría', style: Theme.of(context).textTheme.titleMedium),
         if (categorias.isEmpty)
           const Padding(
