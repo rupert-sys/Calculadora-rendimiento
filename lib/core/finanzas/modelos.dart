@@ -104,12 +104,15 @@ class TarjetaCredito {
   final Centavos pagoMinimoFijo;
 }
 
+/// Inflación anual que usa el simulador si no se indica otra.
+const inflacionPorDefecto = 0.04;
+
 /// Supuestos generales para proyectar en el tiempo.
 class Escenario {
   const Escenario({
     required this.nombre,
     required this.anios,
-    this.inflacionAnual = 0,
+    this.inflacionAnual = inflacionPorDefecto,
   }) : assert(anios >= 1 && anios <= 30);
 
   final String nombre;
