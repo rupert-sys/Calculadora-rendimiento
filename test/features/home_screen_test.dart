@@ -11,6 +11,6 @@ void main() {
     await tester.tap(find.text('Calcular'));
     await tester.pump();
 
-    expect(find.text('Ganancia: \$50.00'), findsOneWidget);
+    expect(find.text('Ganancia: \$50.00 MXN'), findsOneWidget);
   });
 }
