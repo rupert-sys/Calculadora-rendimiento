@@ -1,0 +1,69 @@
+name: Release Android
+
+# Genera el AAB firmado para subir a Google Play.
+# Correr a mano desde la pestaña Actions ("Run workflow").
+# En los PR que tocan Android se prueba con una llave temporal.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'android/**'
+      - '.github/workflows/release.yml'
+
+jobs:
+  aab:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+
+      - name: Llave de subida (secretos del repo)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::Falta el secreto ANDROID_KEYSTORE_BASE64. Ver la sección "Publicar en Google Play" del README"
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          cat > android/key.properties <<PROPS
+          storePassword=$KEYSTORE_PASSWORD
+          keyPassword=${KEY_PASSWORD:-$KEYSTORE_PASSWORD}
+          keyAlias=$KEY_ALIAS
+          storeFile=upload-keystore.jks
+          PROPS
+
+      - name: Llave temporal (solo para probar la firma en PR)
+        if: github.event_name == 'pull_request'
+        run: |
+          keytool -genkeypair -noprompt -keystore android/app/upload-keystore.jks \
+            -storepass prueba123 -keypass prueba123 -alias prueba \
+            -keyalg RSA -keysize 2048 -validity 1 -dname "CN=Prueba"
+          printf 'storePassword=prueba123\nkeyPassword=prueba123\nkeyAlias=prueba\nstoreFile=upload-keystore.jks\n' > android/key.properties
+
+      # El número de build crece en cada corrida; Play exige que nunca se repita.
+      - run: flutter build appbundle --release --build-number=${{ github.run_number }}
+
+      - name: Verificar firma
+        run: |
+          jarsigner -verify build/app/outputs/bundle/release/app-release.aab | tail -1
+          keytool -printcert -jarfile build/app/outputs/bundle/release/app-release.aab | grep -E 'Owner|SHA256:' | head -2
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          name: app-release-aab-${{ github.run_number }}
+          path: build/app/outputs/bundle/release/app-release.aab

@@ -61,3 +61,33 @@ Se agregan en la fase 6 del plan con:
 ```bash
 flutter create --platforms=ios,macos,windows,web .
 ```
+
+## Publicar en Google Play
+
+Play pide un Android App Bundle (`.aab`) firmado con tu llave de subida.
+
+1. Crea la llave una sola vez y guárdala fuera del repo:
+
+   ```bash
+   keytool -genkey -v -keystore ~/upload-keystore.jks -keyalg RSA \
+     -keysize 2048 -validity 10000 -alias upload
+   ```
+
+2. En GitHub, en Settings > Secrets and variables > Actions, agrega:
+   - `ANDROID_KEYSTORE_BASE64`: la salida de `base64 -i ~/upload-keystore.jks` (en Linux, `base64 -w0`)
+   - `ANDROID_KEYSTORE_PASSWORD`: la contraseña del keystore
+   - `ANDROID_KEY_ALIAS`: `upload`
+   - `ANDROID_KEY_PASSWORD`: la contraseña de la llave (si es la misma, puedes omitirlo)
+
+3. En la pestaña Actions, corre **Release Android** y descarga el artefacto `app-release-aab-N`.
+
+Para compilarlo en tu máquina, crea `android/key.properties` (no se sube a git):
+
+```properties
+storePassword=...
+keyPassword=...
+keyAlias=upload
+storeFile=/ruta/a/upload-keystore.jks
+```
+
+y corre `flutter build appbundle --release`. El aviso de privacidad que pide Play está en `docs/privacidad.md`.
