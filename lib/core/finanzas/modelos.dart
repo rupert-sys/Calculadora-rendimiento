@@ -2,7 +2,18 @@ import 'dinero.dart';
 
 enum TipoMovimiento { ingreso, egreso }
 
-enum Frecuencia { unica, quincenal, mensual, anual }
+// Se guarda por índice en la base de datos: los valores nuevos van al final.
+enum Frecuencia { unica, quincenal, mensual, anual, semanal, diario }
+
+/// Orden en que se muestran las frecuencias, de la más corta a la más larga.
+const frecuenciasEnOrden = [
+  Frecuencia.unica,
+  Frecuencia.diario,
+  Frecuencia.semanal,
+  Frecuencia.quincenal,
+  Frecuencia.mensual,
+  Frecuencia.anual,
+];
 
 class Categoria {
   const Categoria({required this.id, required this.nombre, required this.tipo});
@@ -59,9 +70,34 @@ class Movimiento {
         return monto;
       case Frecuencia.anual:
         return inicio.month == mes ? monto : 0;
+      case Frecuencia.semanal:
+        // Cada 7 días desde la fecha de inicio: 4 o 5 veces al mes.
+        return monto * _ocurrencias(inicio, inicioMes, finMes, 7);
+      case Frecuencia.diario:
+        return monto * _ocurrencias(inicio, inicioMes, finMes, 1);
     }
   }
+
+  /// Cuántas veces cae un pago cada [paso] días, contado desde [inicio],
+  /// entre [desde] y [hasta] (inclusive) y sin pasar de la fecha de fin.
+  int _ocurrencias(DateTime inicio, DateTime desde, DateTime hasta, int paso) {
+    final fin = fechaFin;
+    if (fin != null) {
+      final finDia = DateTime(fin.year, fin.month, fin.day);
+      if (finDia.isBefore(hasta)) hasta = finDia;
+    }
+    if (inicio.isAfter(desde)) desde = inicio;
+    final primero = (_dias(inicio, desde) + paso - 1) ~/ paso * paso;
+    final ultimo = _dias(inicio, hasta);
+    if (primero > ultimo) return 0;
+    return (ultimo - primero) ~/ paso + 1;
+  }
 }
+
+// En UTC para que el horario de verano no cambie la cuenta de días.
+int _dias(DateTime a, DateTime b) => DateTime.utc(b.year, b.month, b.day)
+    .difference(DateTime.utc(a.year, a.month, a.day))
+    .inDays;
 
 /// Instrumento de inversión con interés compuesto mensual.
 class Inversion {

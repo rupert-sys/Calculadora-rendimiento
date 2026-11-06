@@ -174,7 +174,7 @@ class _MovimientoFormScreenState extends ConsumerState<MovimientoFormScreen> {
               initialValue: _frecuencia,
               decoration: const InputDecoration(labelText: 'Frecuencia'),
               items: [
-                for (final f in Frecuencia.values)
+                for (final f in frecuenciasEnOrden)
                   DropdownMenuItem(value: f, child: Text(textoFrecuencia(f))),
               ],
               onChanged: (v) => setState(() => _frecuencia = v!),

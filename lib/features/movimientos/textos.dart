@@ -3,6 +3,8 @@ import '../../core/finanzas/modelos.dart';
 
 String textoFrecuencia(Frecuencia f) => switch (f) {
       Frecuencia.unica => 'Única vez',
+      Frecuencia.diario => 'Diario',
+      Frecuencia.semanal => 'Semanal',
       Frecuencia.quincenal => 'Quincenal',
       Frecuencia.mensual => 'Mensual',
       Frecuencia.anual => 'Anual',
