@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/finanzas/dinero.dart';
+import '../../core/finanzas/inversion.dart';
 import '../../core/finanzas/modelos.dart';
 import '../../data/proveedores.dart';
 import '../movimientos/movimiento_form_screen.dart';
@@ -16,7 +17,8 @@ class MovimientosLigados extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final todos = ref.watch(movimientosProvider).valueOrNull ?? const [];
+    final todos =
+        ref.watch(movimientosConRendimientosProvider).valueOrNull ?? const [];
     final ligados = todos.where((m) => m.cuentaId == productoId).toList();
     final estilos = Theme.of(context).textTheme;
 
@@ -53,11 +55,14 @@ class MovimientosLigados extends ConsumerWidget {
                 '${m.tipo == TipoMovimiento.ingreso ? '+' : '-'}'
                 '${formatearPesos(m.monto)}',
               ),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => MovimientoFormScreen(movimiento: m),
-                ),
-              ),
+              // Los rendimientos se editan desde su inversión.
+              onTap: esRendimientoAutomatico(m)
+                  ? null
+                  : () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => MovimientoFormScreen(movimiento: m),
+                        ),
+                      ),
             ),
         ],
       ],

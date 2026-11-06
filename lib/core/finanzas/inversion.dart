@@ -45,6 +45,50 @@ class Rendimientos {
       );
 }
 
+/// Cuánto gana la inversión hoy. Si deposita sus rendimientos no hay
+/// interés sobre interés: cada pago es saldo × tasa / pagos al año.
+Rendimientos rendimientosDeInversion(Inversion i) {
+  if (!i.depositaRendimientos) {
+    return rendimientosDe(i.saldoInicial, i.tasaAnual, i.capitalizacion);
+  }
+  Centavos en(double fraccionDeAnio) =>
+      (i.saldoInicial * i.tasaAnual * fraccionDeAnio).round();
+  return Rendimientos(
+    dia: en(1 / 365),
+    semana: en(7 / 365),
+    mes: en(1 / 12),
+    anio: en(1),
+  );
+}
+
+/// Los rendimientos que se depositan en una cuenta, como ingresos
+/// recurrentes con la periodicidad de pago de cada inversión.
+List<Movimiento> rendimientosComoIngresos(List<Inversion> inversiones) => [
+      for (final i in inversiones)
+        if (i.depositaRendimientos && i.saldoInicial > 0 && i.tasaAnual > 0)
+          Movimiento(
+            id: 'rendimiento-${i.id}',
+            tipo: TipoMovimiento.ingreso,
+            descripcion: 'Rendimiento de ${i.nombre}',
+            monto: (i.saldoInicial *
+                    i.tasaAnual /
+                    periodosPorAnio(i.capitalizacion))
+                .round(),
+            categoriaId: 'inversiones',
+            frecuencia: switch (i.capitalizacion) {
+              Capitalizacion.diaria => Frecuencia.diario,
+              Capitalizacion.semanal => Frecuencia.semanal,
+              Capitalizacion.mensual => Frecuencia.mensual,
+              Capitalizacion.anual => Frecuencia.anual,
+            },
+            fechaInicio: DateTime(2000, 1, 1),
+            cuentaId: i.cuentaDestinoId,
+          ),
+    ];
+
+/// `true` si el movimiento lo genera una inversión y no se captura a mano.
+bool esRendimientoAutomatico(Movimiento m) => m.id.startsWith('rendimiento-');
+
 /// Cuánto gana [saldo] a la [tasaAnual] con capitalización [c], sin aportes.
 Rendimientos rendimientosDe(
     Centavos saldo, double tasaAnual, Capitalizacion c) {
@@ -62,10 +106,12 @@ Rendimientos rendimientosDe(
 /// Saldo de la inversión al final de cada mes, del mes 1 al [meses].
 ///
 /// Cada mes se suma el interés equivalente a su capitalización y después
-/// el aporte.
+/// el aporte. Si los rendimientos se depositan en una cuenta, el saldo solo
+/// crece con los aportes.
 List<Centavos> proyectarInversion(Inversion inversion, int meses) {
-  final tasaMensual =
-      tasaMensualEquivalente(inversion.tasaAnual, inversion.capitalizacion);
+  final tasaMensual = inversion.depositaRendimientos
+      ? 0.0
+      : tasaMensualEquivalente(inversion.tasaAnual, inversion.capitalizacion);
   var saldo = inversion.saldoInicial;
   final saldos = <Centavos>[];
   for (var i = 0; i < meses; i++) {

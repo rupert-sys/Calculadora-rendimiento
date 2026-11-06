@@ -29,6 +29,7 @@ class _InversionFormScreenState extends ConsumerState<InversionFormScreen> {
   late final TextEditingController _tasa;
   late final TextEditingController _aporte;
   late Capitalizacion _capitalizacion;
+  String? _cuentaDestinoId;
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class _InversionFormScreenState extends ConsumerState<InversionFormScreen> {
       text: i == null ? '' : (i.tasaAnual * 100).toStringAsFixed(2),
     );
     _capitalizacion = i?.capitalizacion ?? Capitalizacion.mensual;
+    _cuentaDestinoId = i?.cuentaDestinoId;
     _aporte = TextEditingController(
       text: i == null ? '0' : aUnidades(i.aporteMensual).toStringAsFixed(2),
     );
@@ -73,6 +75,7 @@ class _InversionFormScreenState extends ConsumerState<InversionFormScreen> {
       aporteMensual: aCentavos(aporte),
       institucion: _institucion.text.trim(),
       capitalizacion: _capitalizacion,
+      cuentaDestinoId: _cuentaDestinoId,
     );
   }
 
@@ -145,6 +148,11 @@ class _InversionFormScreenState extends ConsumerState<InversionFormScreen> {
               onChanged: (c) => setState(() => _capitalizacion = c),
             ),
             const SizedBox(height: 16),
+            _CampoDestino(
+              valor: _cuentaDestinoId,
+              onChanged: (v) => setState(() => _cuentaDestinoId = v),
+            ),
+            const SizedBox(height: 16),
             CampoNumero(
               controller: _aporte,
               etiqueta: 'Aporte mensual (MXN)',
@@ -157,6 +165,8 @@ class _InversionFormScreenState extends ConsumerState<InversionFormScreen> {
                 saldo: actual.saldoInicial,
                 tasaAnual: actual.tasaAnual,
                 capitalizacion: actual.capitalizacion,
+                depositoEn:
+                    ref.watch(productosProvider)[actual.cuentaDestinoId],
               ),
               const SizedBox(height: 8),
               _Proyeccion(inversion: actual),
@@ -246,4 +256,40 @@ class _Proyeccion extends StatelessWidget {
             style: estilo,
             textAlign: derecha ? TextAlign.right : TextAlign.left),
       );
+}
+
+/// Reinvertir los rendimientos o depositarlos en una cuenta como ingreso.
+class _CampoDestino extends ConsumerWidget {
+  const _CampoDestino({required this.valor, required this.onChanged});
+
+  final String? valor;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cuentas = ref.watch(cuentasProvider).valueOrNull ?? const [];
+    final productos = ref.watch(productosProvider);
+    final actual = cuentas.any((c) => c.id == valor) ? valor : null;
+
+    return DropdownButtonFormField<String?>(
+      key: ValueKey(cuentas.length),
+      initialValue: actual,
+      isExpanded: true,
+      decoration: const InputDecoration(
+        labelText: 'Rendimientos',
+        helperText: 'Depositarlos los suma a tus ingresos',
+      ),
+      items: [
+        const DropdownMenuItem(
+            value: null, child: Text('Reinvertir en esta inversión')),
+        for (final c in cuentas)
+          DropdownMenuItem(
+            value: c.id,
+            child: Text('Depositar en ${productos[c.id] ?? c.nombre}',
+                overflow: TextOverflow.ellipsis),
+          ),
+      ],
+      onChanged: onChanged,
+    );
+  }
 }

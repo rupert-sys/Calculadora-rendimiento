@@ -30,6 +30,7 @@ class Inversiones extends Table {
   IntColumn get aporteMensualCentavos => integer()();
   TextColumn get institucion => text().withDefault(const Constant(''))();
   IntColumn get capitalizacion => integer().withDefault(const Constant(2))();
+  TextColumn get cuentaDestinoId => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -72,7 +73,7 @@ class BaseDatos extends _$BaseDatos {
   BaseDatos([QueryExecutor? executor]) : super(executor ?? _abrir());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -100,13 +101,19 @@ class BaseDatos extends _$BaseDatos {
           if (desde == 3) {
             await m.addColumn(cuentas, cuentas.capitalizacion);
           }
+          if (desde >= 2 && desde < 5) {
+            await m.addColumn(inversiones, inversiones.cuentaDestinoId);
+          }
         },
       );
 
-  /// Quita la liga de los movimientos que apuntaban al producto [id].
-  Future<void> desligarMovimientos(String id) {
-    return (update(movimientos)..where((m) => m.cuentaId.equals(id)))
+  /// Quita la liga de los movimientos que apuntaban al producto [id] y de
+  /// las inversiones que depositaban ahí sus rendimientos.
+  Future<void> desligarMovimientos(String id) async {
+    await (update(movimientos)..where((m) => m.cuentaId.equals(id)))
         .write(const MovimientosCompanion(cuentaId: Value(null)));
+    await (update(inversiones)..where((i) => i.cuentaDestinoId.equals(id)))
+        .write(const InversionesCompanion(cuentaDestinoId: Value(null)));
   }
 
   /// SQLite local en Android, iOS, escritorio y web.

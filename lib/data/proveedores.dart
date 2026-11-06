@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/finanzas/cuentas.dart';
 import '../core/finanzas/flujo.dart';
+import '../core/finanzas/inversion.dart';
 import '../core/finanzas/modelos.dart';
 import 'base_datos.dart';
 import 'cuentas_repositorio.dart';
@@ -29,10 +30,20 @@ final mesSeleccionadoProvider = StateProvider<DateTime>((ref) {
   return DateTime(hoy.year, hoy.month);
 });
 
+/// Movimientos capturados más los rendimientos que las inversiones depositan
+/// en una cuenta como ingreso.
+final movimientosConRendimientosProvider =
+    Provider<AsyncValue<List<Movimiento>>>((ref) {
+  final inversiones = ref.watch(inversionesProvider).valueOrNull ?? const [];
+  return ref
+      .watch(movimientosProvider)
+      .whenData((movs) => [...movs, ...rendimientosComoIngresos(inversiones)]);
+});
+
 final resumenMensualProvider = Provider<AsyncValue<ResumenMensual>>((ref) {
   final mes = ref.watch(mesSeleccionadoProvider);
   return ref
-      .watch(movimientosProvider)
+      .watch(movimientosConRendimientosProvider)
       .whenData((movs) => flujoMensual(movs, mes.year, mes.month));
 });
 

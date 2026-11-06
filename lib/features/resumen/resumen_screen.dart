@@ -57,7 +57,8 @@ class ResumenScreen extends ConsumerWidget {
             data: (r) => _Contenido(
               resumen: r,
               movimientos:
-                  ref.watch(movimientosProvider).valueOrNull ?? const [],
+                  ref.watch(movimientosConRendimientosProvider).valueOrNull ??
+                      const [],
               mes: mes,
             ),
           ),
@@ -150,8 +151,7 @@ class _Rendimientos extends ConsumerWidget {
     if (inversiones.isEmpty) return const SizedBox();
     final texto = Theme.of(context).textTheme;
 
-    Rendimientos de(Inversion i) =>
-        rendimientosDe(i.saldoInicial, i.tasaAnual, i.capitalizacion);
+    Rendimientos de(Inversion i) => rendimientosDeInversion(i);
     final total = inversiones.fold(const Rendimientos(), (s, i) => s + de(i));
 
     return Column(
@@ -172,7 +172,8 @@ class _Rendimientos extends ConsumerWidget {
             title: Text(i.nombre),
             subtitle: Text(
               '${textoTasa(i.tasaAnual)} anual · pago '
-              '${textoCapitalizacion(i.capitalizacion).toLowerCase()}',
+              '${textoCapitalizacion(i.capitalizacion).toLowerCase()}'
+              '${i.depositaRendimientos ? ' a tu cuenta' : ', se reinvierte'}',
             ),
             trailing: Text('${formatearPesos(de(i).mes)} al mes'),
           ),

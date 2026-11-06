@@ -70,6 +70,30 @@ void main() {
     expect(m.cuentaId, isNull);
   });
 
+  test('borrar la cuenta destino vuelve a reinvertir los rendimientos',
+      () async {
+    await CuentasRepositorio(db).guardar(const Cuenta(
+      id: 'c1',
+      institucion: 'BBVA',
+      nombre: 'Nómina',
+      tipo: TipoCuenta.debito,
+      saldo: 0,
+    ));
+    final inversiones = InversionesRepositorio(db);
+    await inversiones.guardar(const Inversion(
+      id: 'i1',
+      nombre: 'Nu',
+      saldoInicial: 100,
+      tasaAnual: 0.1,
+      cuentaDestinoId: 'c1',
+    ));
+    expect(
+        (await inversiones.observarTodas().first).single.cuentaDestinoId, 'c1');
+    await CuentasRepositorio(db).borrar('c1');
+    expect((await inversiones.observarTodas().first).single.cuentaDestinoId,
+        isNull);
+  });
+
   test('borrar una tarjeta también suelta sus movimientos', () async {
     final tarjetas = TarjetasRepositorio(db);
     final movs = MovimientosRepositorio(db);

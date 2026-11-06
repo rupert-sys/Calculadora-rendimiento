@@ -80,16 +80,21 @@ class TarjetaRendimientos extends StatelessWidget {
     required this.saldo,
     required this.tasaAnual,
     required this.capitalizacion,
+    this.depositoEn,
   });
 
   final Centavos saldo;
   final double tasaAnual;
   final Capitalizacion capitalizacion;
 
+  /// Cuenta donde se depositan los rendimientos; `null` si se reinvierten.
+  final String? depositoEn;
+
   @override
   Widget build(BuildContext context) {
     final texto = Theme.of(context).textTheme;
     final efectiva = tasaEfectivaAnual(tasaAnual, capitalizacion);
+    final deposita = depositoEn != null;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -99,13 +104,24 @@ class TarjetaRendimientos extends StatelessWidget {
             Text('Rendimiento', style: texto.titleMedium),
             const SizedBox(height: 4),
             Text(
-              'Con pago ${textoCapitalizacion(capitalizacion).toLowerCase()}, '
-              'tu tasa efectiva es ${textoTasa(efectiva)} anual.',
+              deposita
+                  ? 'Pago ${textoCapitalizacion(capitalizacion).toLowerCase()} '
+                      'a $depositoEn como ingreso; no se reinvierte.'
+                  : 'Con pago ${textoCapitalizacion(capitalizacion).toLowerCase()} '
+                      'y reinvertido, tu tasa efectiva es '
+                      '${textoTasa(efectiva)} anual.',
               style: texto.bodySmall,
             ),
             const SizedBox(height: 12),
             FilaRendimientos(
-              rendimientos: rendimientosDe(saldo, tasaAnual, capitalizacion),
+              rendimientos: rendimientosDeInversion(Inversion(
+                id: '',
+                nombre: '',
+                saldoInicial: saldo,
+                tasaAnual: tasaAnual,
+                capitalizacion: capitalizacion,
+                cuentaDestinoId: deposita ? '' : null,
+              )),
             ),
           ],
         ),

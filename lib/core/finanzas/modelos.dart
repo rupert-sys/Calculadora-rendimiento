@@ -116,6 +116,7 @@ class Inversion {
     this.aporteMensual = 0,
     this.institucion = '',
     this.capitalizacion = Capitalizacion.mensual,
+    this.cuentaDestinoId,
   });
 
   final String id;
@@ -130,6 +131,12 @@ class Inversion {
   /// Tasa nominal anual como fracción: 0.08 = 8 %.
   final double tasaAnual;
   final Centavos aporteMensual;
+
+  /// Cuenta donde se depositan los rendimientos como ingreso. `null` = se
+  /// reinvierten en la misma inversión.
+  final String? cuentaDestinoId;
+
+  bool get depositaRendimientos => cuentaDestinoId != null;
 }
 
 /// Tarjeta de crédito. El pago mínimo es el mayor entre un porcentaje del

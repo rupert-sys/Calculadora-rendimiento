@@ -100,7 +100,14 @@ ResultadoSimulacion simular({
       final inv = inversiones.elementAt(i);
       final saldo = saldosInv.elementAt(i);
       final tasa = tasaMensualEquivalente(inv.tasaAnual, inv.capitalizacion);
-      saldosInv[i] = saldo + (saldo * tasa).round() + inv.aporteMensual;
+      final interes = (saldo * tasa).round();
+      if (inv.depositaRendimientos) {
+        // El rendimiento llega a la cuenta en lugar de reinvertirse.
+        saldosInv[i] = saldo + inv.aporteMensual;
+        efectivo += interes;
+      } else {
+        saldosInv[i] = saldo + interes + inv.aporteMensual;
+      }
       efectivo -= inv.aporteMensual;
     }
 

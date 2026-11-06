@@ -24,6 +24,7 @@ class InversionesRepositorio {
             aporteMensualCentavos: i.aporteMensual,
             institucion: Value(i.institucion),
             capitalizacion: Value(i.capitalizacion.index),
+            cuentaDestinoId: Value(i.cuentaDestinoId),
           ),
         );
   }
@@ -44,5 +45,6 @@ class InversionesRepositorio {
         aporteMensual: f.aporteMensualCentavos,
         institucion: f.institucion,
         capitalizacion: Capitalizacion.values[f.capitalizacion],
+        cuentaDestinoId: f.cuentaDestinoId,
       );
 }
