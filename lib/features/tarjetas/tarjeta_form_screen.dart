@@ -5,7 +5,9 @@ import '../../core/finanzas/dinero.dart';
 import '../../core/finanzas/modelos.dart';
 import '../../core/finanzas/tarjeta.dart';
 import '../../data/proveedores.dart';
+import '../comun/campo_institucion.dart';
 import '../comun/campos.dart';
+import '../comun/movimientos_ligados.dart';
 
 /// Crea o edita una tarjeta y compara cuánto cuesta pagarla de distintas formas.
 class TarjetaFormScreen extends ConsumerStatefulWidget {
@@ -19,6 +21,7 @@ class TarjetaFormScreen extends ConsumerStatefulWidget {
 
 class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
   final _form = GlobalKey<FormState>();
+  late final TextEditingController _institucion;
   late final TextEditingController _nombre;
   late final TextEditingController _saldo;
   late final TextEditingController _tasa;
@@ -30,6 +33,7 @@ class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
   void initState() {
     super.initState();
     final t = widget.tarjeta;
+    _institucion = TextEditingController(text: t?.institucion ?? '');
     _nombre = TextEditingController(text: t?.nombre ?? '');
     _saldo = TextEditingController(
       text: t == null ? '' : aUnidades(t.saldo).toStringAsFixed(2),
@@ -48,6 +52,7 @@ class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
   @override
   void dispose() {
     for (final c in [
+      _institucion,
       _nombre,
       _saldo,
       _tasa,
@@ -76,6 +81,7 @@ class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
       tasaAnual: tasa / 100,
       pagoMinimoPorcentaje: pct / 100,
       pagoMinimoFijo: aCentavos(fijo),
+      institucion: _institucion.text.trim(),
     );
   }
 
@@ -121,6 +127,8 @@ class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            CampoInstitucion(controller: _institucion),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _nombre,
               decoration:
@@ -189,6 +197,10 @@ class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
             ],
             const SizedBox(height: 24),
             FilledButton(onPressed: _guardar, child: const Text('Guardar')),
+            if (widget.tarjeta != null) ...[
+              const SizedBox(height: 24),
+              MovimientosLigados(productoId: widget.tarjeta!.id),
+            ],
           ],
         ),
       ),

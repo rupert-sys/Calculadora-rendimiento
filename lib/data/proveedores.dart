@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/finanzas/cuentas.dart';
 import '../core/finanzas/flujo.dart';
 import '../core/finanzas/modelos.dart';
 import 'base_datos.dart';
+import 'cuentas_repositorio.dart';
 import 'inversiones_repositorio.dart';
 import 'movimientos_repositorio.dart';
 import 'tarjetas_repositorio.dart';
@@ -50,26 +52,71 @@ final tarjetasProvider = StreamProvider<List<TarjetaCredito>>(
   (ref) => ref.watch(tarjetasRepositorioProvider).observarTodas(),
 );
 
-/// Movimientos, inversiones y tarjetas juntos, para el simulador.
-final datosSimulacionProvider = Provider<
+final cuentasRepositorioProvider = Provider<CuentasRepositorio>(
+  (ref) => CuentasRepositorio(ref.watch(baseDatosProvider)),
+);
+
+final cuentasProvider = StreamProvider<List<Cuenta>>(
+  (ref) => ref.watch(cuentasRepositorioProvider).observarTodas(),
+);
+
+/// Cuentas, inversiones, tarjetas y movimientos juntos, cuando ya cargaron
+/// todos.
+final datosFinancierosProvider = Provider<
     AsyncValue<
         ({
           List<Movimiento> movimientos,
+          List<Cuenta> cuentas,
           List<Inversion> inversiones,
           List<TarjetaCredito> tarjetas,
         })>>((ref) {
   final movs = ref.watch(movimientosProvider);
+  final cuen = ref.watch(cuentasProvider);
   final invs = ref.watch(inversionesProvider);
   final tars = ref.watch(tarjetasProvider);
-  for (final v in [movs, invs, tars]) {
+  for (final v in [movs, cuen, invs, tars]) {
     if (v.hasError) return AsyncValue.error(v.error!, v.stackTrace!);
   }
-  if (!movs.hasValue || !invs.hasValue || !tars.hasValue) {
+  if (!movs.hasValue || !cuen.hasValue || !invs.hasValue || !tars.hasValue) {
     return const AsyncValue.loading();
   }
   return AsyncValue.data((
     movimientos: movs.requireValue,
+    cuentas: cuen.requireValue,
     inversiones: invs.requireValue,
     tarjetas: tars.requireValue,
   ));
+});
+
+/// Productos agrupados por institución, para la pantalla de cuentas.
+final gruposInstitucionProvider =
+    Provider<AsyncValue<List<GrupoInstitucion>>>((ref) {
+  return ref
+      .watch(datosFinancierosProvider)
+      .whenData((d) => agruparPorInstitucion(
+            cuentas: d.cuentas,
+            inversiones: d.inversiones,
+            tarjetas: d.tarjetas,
+          ));
+});
+
+/// Nombres de institución ya capturados, para sugerirlos en los formularios.
+final institucionesProvider = Provider<List<String>>((ref) {
+  return institucionesUsadas(
+      ref.watch(gruposInstitucionProvider).valueOrNull ?? const []);
+});
+
+/// Etiqueta de cada cuenta, inversión y tarjeta por su id, en el orden de
+/// la pantalla de cuentas. Para ligar movimientos a un producto.
+final productosProvider = Provider<Map<String, String>>((ref) {
+  final grupos = ref.watch(gruposInstitucionProvider).valueOrNull ?? const [];
+  String etiqueta(String institucion, String nombre) =>
+      institucion.isEmpty ? nombre : '$institucion · $nombre';
+  return {
+    for (final g in grupos) ...{
+      for (final c in g.cuentas) c.id: etiqueta(g.institucion, c.nombre),
+      for (final i in g.inversiones) i.id: etiqueta(g.institucion, i.nombre),
+      for (final t in g.tarjetas) t.id: etiqueta(g.institucion, t.nombre),
+    },
+  };
 });

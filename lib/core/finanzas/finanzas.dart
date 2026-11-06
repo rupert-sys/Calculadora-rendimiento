@@ -2,6 +2,7 @@
 library;
 
 export 'categorias.dart';
+export 'cuentas.dart';
 export 'dinero.dart';
 export 'flujo.dart';
 export 'inversion.dart';

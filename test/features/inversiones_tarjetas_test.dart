@@ -18,11 +18,15 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Inversiones').last);
+    await tester.tap(find.text('Cuentas').last);
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Agregar'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Inversión'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.widgetWithText(TextFormField, 'Institución'), 'GBM');
     await tester.enterText(
         find.widgetWithText(TextFormField, 'Nombre'), 'Cetes');
     await tester.enterText(
@@ -43,7 +47,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Cetes'), findsOneWidget);
-    expect(find.text('Total invertido hoy'), findsOneWidget);
+    expect(find.text('GBM'), findsOneWidget);
+    expect(find.text('Patrimonio hoy'), findsOneWidget);
     expect(find.text(r'$10,000.00'), findsWidgets);
 
     await _cerrar(tester, db);

@@ -70,6 +70,7 @@ class _FilaMovimiento extends ConsumerWidget {
     final esIngreso = m.tipo == TipoMovimiento.ingreso;
     final colores = Theme.of(context).colorScheme;
     final color = esIngreso ? Colors.green.shade700 : colores.error;
+    final cuenta = ref.watch(productosProvider)[m.cuentaId];
 
     return Dismissible(
       key: ValueKey(m.id),
@@ -91,8 +92,10 @@ class _FilaMovimiento extends ConsumerWidget {
         title: Text(m.descripcion),
         subtitle: Text(
           '${nombreCategoria(m.categoriaId)} · ${textoFrecuencia(m.frecuencia)}'
-          ' · desde ${textoFecha(m.fechaInicio)}',
+          ' · desde ${textoFecha(m.fechaInicio)}'
+          '${cuenta == null ? '' : '\n$cuenta'}',
         ),
+        isThreeLine: cuenta != null,
         trailing: Text(
           '${esIngreso ? '+' : '-'}${formatearPesos(m.monto)}',
           style: TextStyle(color: color, fontWeight: FontWeight.w600),

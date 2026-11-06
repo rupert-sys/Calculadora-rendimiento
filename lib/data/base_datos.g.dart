@@ -55,6 +55,12 @@ class $MovimientosTable extends Movimientos
   late final GeneratedColumn<DateTime> fechaFin = GeneratedColumn<DateTime>(
       'fecha_fin', aliasedName, true,
       type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _cuentaIdMeta =
+      const VerificationMeta('cuentaId');
+  @override
+  late final GeneratedColumn<String> cuentaId = GeneratedColumn<String>(
+      'cuenta_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -64,7 +70,8 @@ class $MovimientosTable extends Movimientos
         categoriaId,
         frecuencia,
         fechaInicio,
-        fechaFin
+        fechaFin,
+        cuentaId
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -131,6 +138,10 @@ class $MovimientosTable extends Movimientos
       context.handle(_fechaFinMeta,
           fechaFin.isAcceptableOrUnknown(data['fecha_fin']!, _fechaFinMeta));
     }
+    if (data.containsKey('cuenta_id')) {
+      context.handle(_cuentaIdMeta,
+          cuentaId.isAcceptableOrUnknown(data['cuenta_id']!, _cuentaIdMeta));
+    }
     return context;
   }
 
@@ -156,6 +167,8 @@ class $MovimientosTable extends Movimientos
           .read(DriftSqlType.dateTime, data['${effectivePrefix}fecha_inicio'])!,
       fechaFin: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}fecha_fin']),
+      cuentaId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}cuenta_id']),
     );
   }
 
@@ -174,6 +187,7 @@ class MovimientoFila extends DataClass implements Insertable<MovimientoFila> {
   final int frecuencia;
   final DateTime fechaInicio;
   final DateTime? fechaFin;
+  final String? cuentaId;
   const MovimientoFila(
       {required this.id,
       required this.tipo,
@@ -182,7 +196,8 @@ class MovimientoFila extends DataClass implements Insertable<MovimientoFila> {
       required this.categoriaId,
       required this.frecuencia,
       required this.fechaInicio,
-      this.fechaFin});
+      this.fechaFin,
+      this.cuentaId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -195,6 +210,9 @@ class MovimientoFila extends DataClass implements Insertable<MovimientoFila> {
     map['fecha_inicio'] = Variable<DateTime>(fechaInicio);
     if (!nullToAbsent || fechaFin != null) {
       map['fecha_fin'] = Variable<DateTime>(fechaFin);
+    }
+    if (!nullToAbsent || cuentaId != null) {
+      map['cuenta_id'] = Variable<String>(cuentaId);
     }
     return map;
   }
@@ -211,6 +229,9 @@ class MovimientoFila extends DataClass implements Insertable<MovimientoFila> {
       fechaFin: fechaFin == null && nullToAbsent
           ? const Value.absent()
           : Value(fechaFin),
+      cuentaId: cuentaId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cuentaId),
     );
   }
 
@@ -226,6 +247,7 @@ class MovimientoFila extends DataClass implements Insertable<MovimientoFila> {
       frecuencia: serializer.fromJson<int>(json['frecuencia']),
       fechaInicio: serializer.fromJson<DateTime>(json['fechaInicio']),
       fechaFin: serializer.fromJson<DateTime?>(json['fechaFin']),
+      cuentaId: serializer.fromJson<String?>(json['cuentaId']),
     );
   }
   @override
@@ -240,6 +262,7 @@ class MovimientoFila extends DataClass implements Insertable<MovimientoFila> {
       'frecuencia': serializer.toJson<int>(frecuencia),
       'fechaInicio': serializer.toJson<DateTime>(fechaInicio),
       'fechaFin': serializer.toJson<DateTime?>(fechaFin),
+      'cuentaId': serializer.toJson<String?>(cuentaId),
     };
   }
 
@@ -251,7 +274,8 @@ class MovimientoFila extends DataClass implements Insertable<MovimientoFila> {
           String? categoriaId,
           int? frecuencia,
           DateTime? fechaInicio,
-          Value<DateTime?> fechaFin = const Value.absent()}) =>
+          Value<DateTime?> fechaFin = const Value.absent(),
+          Value<String?> cuentaId = const Value.absent()}) =>
       MovimientoFila(
         id: id ?? this.id,
         tipo: tipo ?? this.tipo,
@@ -261,6 +285,7 @@ class MovimientoFila extends DataClass implements Insertable<MovimientoFila> {
         frecuencia: frecuencia ?? this.frecuencia,
         fechaInicio: fechaInicio ?? this.fechaInicio,
         fechaFin: fechaFin.present ? fechaFin.value : this.fechaFin,
+        cuentaId: cuentaId.present ? cuentaId.value : this.cuentaId,
       );
   MovimientoFila copyWithCompanion(MovimientosCompanion data) {
     return MovimientoFila(
@@ -278,6 +303,7 @@ class MovimientoFila extends DataClass implements Insertable<MovimientoFila> {
       fechaInicio:
           data.fechaInicio.present ? data.fechaInicio.value : this.fechaInicio,
       fechaFin: data.fechaFin.present ? data.fechaFin.value : this.fechaFin,
+      cuentaId: data.cuentaId.present ? data.cuentaId.value : this.cuentaId,
     );
   }
 
@@ -291,14 +317,15 @@ class MovimientoFila extends DataClass implements Insertable<MovimientoFila> {
           ..write('categoriaId: $categoriaId, ')
           ..write('frecuencia: $frecuencia, ')
           ..write('fechaInicio: $fechaInicio, ')
-          ..write('fechaFin: $fechaFin')
+          ..write('fechaFin: $fechaFin, ')
+          ..write('cuentaId: $cuentaId')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(id, tipo, descripcion, montoCentavos,
-      categoriaId, frecuencia, fechaInicio, fechaFin);
+      categoriaId, frecuencia, fechaInicio, fechaFin, cuentaId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -310,7 +337,8 @@ class MovimientoFila extends DataClass implements Insertable<MovimientoFila> {
           other.categoriaId == this.categoriaId &&
           other.frecuencia == this.frecuencia &&
           other.fechaInicio == this.fechaInicio &&
-          other.fechaFin == this.fechaFin);
+          other.fechaFin == this.fechaFin &&
+          other.cuentaId == this.cuentaId);
 }
 
 class MovimientosCompanion extends UpdateCompanion<MovimientoFila> {
@@ -322,6 +350,7 @@ class MovimientosCompanion extends UpdateCompanion<MovimientoFila> {
   final Value<int> frecuencia;
   final Value<DateTime> fechaInicio;
   final Value<DateTime?> fechaFin;
+  final Value<String?> cuentaId;
   final Value<int> rowid;
   const MovimientosCompanion({
     this.id = const Value.absent(),
@@ -332,6 +361,7 @@ class MovimientosCompanion extends UpdateCompanion<MovimientoFila> {
     this.frecuencia = const Value.absent(),
     this.fechaInicio = const Value.absent(),
     this.fechaFin = const Value.absent(),
+    this.cuentaId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   MovimientosCompanion.insert({
@@ -343,6 +373,7 @@ class MovimientosCompanion extends UpdateCompanion<MovimientoFila> {
     required int frecuencia,
     required DateTime fechaInicio,
     this.fechaFin = const Value.absent(),
+    this.cuentaId = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         tipo = Value(tipo),
@@ -360,6 +391,7 @@ class MovimientosCompanion extends UpdateCompanion<MovimientoFila> {
     Expression<int>? frecuencia,
     Expression<DateTime>? fechaInicio,
     Expression<DateTime>? fechaFin,
+    Expression<String>? cuentaId,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -371,6 +403,7 @@ class MovimientosCompanion extends UpdateCompanion<MovimientoFila> {
       if (frecuencia != null) 'frecuencia': frecuencia,
       if (fechaInicio != null) 'fecha_inicio': fechaInicio,
       if (fechaFin != null) 'fecha_fin': fechaFin,
+      if (cuentaId != null) 'cuenta_id': cuentaId,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -384,6 +417,7 @@ class MovimientosCompanion extends UpdateCompanion<MovimientoFila> {
       Value<int>? frecuencia,
       Value<DateTime>? fechaInicio,
       Value<DateTime?>? fechaFin,
+      Value<String?>? cuentaId,
       Value<int>? rowid}) {
     return MovimientosCompanion(
       id: id ?? this.id,
@@ -394,6 +428,7 @@ class MovimientosCompanion extends UpdateCompanion<MovimientoFila> {
       frecuencia: frecuencia ?? this.frecuencia,
       fechaInicio: fechaInicio ?? this.fechaInicio,
       fechaFin: fechaFin ?? this.fechaFin,
+      cuentaId: cuentaId ?? this.cuentaId,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -425,6 +460,9 @@ class MovimientosCompanion extends UpdateCompanion<MovimientoFila> {
     if (fechaFin.present) {
       map['fecha_fin'] = Variable<DateTime>(fechaFin.value);
     }
+    if (cuentaId.present) {
+      map['cuenta_id'] = Variable<String>(cuentaId.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -442,6 +480,7 @@ class MovimientosCompanion extends UpdateCompanion<MovimientoFila> {
           ..write('frecuencia: $frecuencia, ')
           ..write('fechaInicio: $fechaInicio, ')
           ..write('fechaFin: $fechaFin, ')
+          ..write('cuentaId: $cuentaId, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -482,9 +521,23 @@ class $InversionesTable extends Inversiones
   late final GeneratedColumn<int> aporteMensualCentavos = GeneratedColumn<int>(
       'aporte_mensual_centavos', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _institucionMeta =
+      const VerificationMeta('institucion');
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, nombre, saldoInicialCentavos, tasaAnual, aporteMensualCentavos];
+  late final GeneratedColumn<String> institucion = GeneratedColumn<String>(
+      'institucion', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(''));
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        nombre,
+        saldoInicialCentavos,
+        tasaAnual,
+        aporteMensualCentavos,
+        institucion
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -528,6 +581,12 @@ class $InversionesTable extends Inversiones
     } else if (isInserting) {
       context.missing(_aporteMensualCentavosMeta);
     }
+    if (data.containsKey('institucion')) {
+      context.handle(
+          _institucionMeta,
+          institucion.isAcceptableOrUnknown(
+              data['institucion']!, _institucionMeta));
+    }
     return context;
   }
 
@@ -547,6 +606,8 @@ class $InversionesTable extends Inversiones
           .read(DriftSqlType.double, data['${effectivePrefix}tasa_anual'])!,
       aporteMensualCentavos: attachedDatabase.typeMapping.read(
           DriftSqlType.int, data['${effectivePrefix}aporte_mensual_centavos'])!,
+      institucion: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}institucion'])!,
     );
   }
 
@@ -562,12 +623,14 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
   final int saldoInicialCentavos;
   final double tasaAnual;
   final int aporteMensualCentavos;
+  final String institucion;
   const InversionFila(
       {required this.id,
       required this.nombre,
       required this.saldoInicialCentavos,
       required this.tasaAnual,
-      required this.aporteMensualCentavos});
+      required this.aporteMensualCentavos,
+      required this.institucion});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -576,6 +639,7 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
     map['saldo_inicial_centavos'] = Variable<int>(saldoInicialCentavos);
     map['tasa_anual'] = Variable<double>(tasaAnual);
     map['aporte_mensual_centavos'] = Variable<int>(aporteMensualCentavos);
+    map['institucion'] = Variable<String>(institucion);
     return map;
   }
 
@@ -586,6 +650,7 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
       saldoInicialCentavos: Value(saldoInicialCentavos),
       tasaAnual: Value(tasaAnual),
       aporteMensualCentavos: Value(aporteMensualCentavos),
+      institucion: Value(institucion),
     );
   }
 
@@ -600,6 +665,7 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
       tasaAnual: serializer.fromJson<double>(json['tasaAnual']),
       aporteMensualCentavos:
           serializer.fromJson<int>(json['aporteMensualCentavos']),
+      institucion: serializer.fromJson<String>(json['institucion']),
     );
   }
   @override
@@ -611,6 +677,7 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
       'saldoInicialCentavos': serializer.toJson<int>(saldoInicialCentavos),
       'tasaAnual': serializer.toJson<double>(tasaAnual),
       'aporteMensualCentavos': serializer.toJson<int>(aporteMensualCentavos),
+      'institucion': serializer.toJson<String>(institucion),
     };
   }
 
@@ -619,7 +686,8 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
           String? nombre,
           int? saldoInicialCentavos,
           double? tasaAnual,
-          int? aporteMensualCentavos}) =>
+          int? aporteMensualCentavos,
+          String? institucion}) =>
       InversionFila(
         id: id ?? this.id,
         nombre: nombre ?? this.nombre,
@@ -627,6 +695,7 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
         tasaAnual: tasaAnual ?? this.tasaAnual,
         aporteMensualCentavos:
             aporteMensualCentavos ?? this.aporteMensualCentavos,
+        institucion: institucion ?? this.institucion,
       );
   InversionFila copyWithCompanion(InversionesCompanion data) {
     return InversionFila(
@@ -639,6 +708,8 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
       aporteMensualCentavos: data.aporteMensualCentavos.present
           ? data.aporteMensualCentavos.value
           : this.aporteMensualCentavos,
+      institucion:
+          data.institucion.present ? data.institucion.value : this.institucion,
     );
   }
 
@@ -649,14 +720,15 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
           ..write('nombre: $nombre, ')
           ..write('saldoInicialCentavos: $saldoInicialCentavos, ')
           ..write('tasaAnual: $tasaAnual, ')
-          ..write('aporteMensualCentavos: $aporteMensualCentavos')
+          ..write('aporteMensualCentavos: $aporteMensualCentavos, ')
+          ..write('institucion: $institucion')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, nombre, saldoInicialCentavos, tasaAnual, aporteMensualCentavos);
+  int get hashCode => Object.hash(id, nombre, saldoInicialCentavos, tasaAnual,
+      aporteMensualCentavos, institucion);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -665,7 +737,8 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
           other.nombre == this.nombre &&
           other.saldoInicialCentavos == this.saldoInicialCentavos &&
           other.tasaAnual == this.tasaAnual &&
-          other.aporteMensualCentavos == this.aporteMensualCentavos);
+          other.aporteMensualCentavos == this.aporteMensualCentavos &&
+          other.institucion == this.institucion);
 }
 
 class InversionesCompanion extends UpdateCompanion<InversionFila> {
@@ -674,6 +747,7 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
   final Value<int> saldoInicialCentavos;
   final Value<double> tasaAnual;
   final Value<int> aporteMensualCentavos;
+  final Value<String> institucion;
   final Value<int> rowid;
   const InversionesCompanion({
     this.id = const Value.absent(),
@@ -681,6 +755,7 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
     this.saldoInicialCentavos = const Value.absent(),
     this.tasaAnual = const Value.absent(),
     this.aporteMensualCentavos = const Value.absent(),
+    this.institucion = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   InversionesCompanion.insert({
@@ -689,6 +764,7 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
     required int saldoInicialCentavos,
     required double tasaAnual,
     required int aporteMensualCentavos,
+    this.institucion = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         nombre = Value(nombre),
@@ -701,6 +777,7 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
     Expression<int>? saldoInicialCentavos,
     Expression<double>? tasaAnual,
     Expression<int>? aporteMensualCentavos,
+    Expression<String>? institucion,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -711,6 +788,7 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
       if (tasaAnual != null) 'tasa_anual': tasaAnual,
       if (aporteMensualCentavos != null)
         'aporte_mensual_centavos': aporteMensualCentavos,
+      if (institucion != null) 'institucion': institucion,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -721,6 +799,7 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
       Value<int>? saldoInicialCentavos,
       Value<double>? tasaAnual,
       Value<int>? aporteMensualCentavos,
+      Value<String>? institucion,
       Value<int>? rowid}) {
     return InversionesCompanion(
       id: id ?? this.id,
@@ -729,6 +808,7 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
       tasaAnual: tasaAnual ?? this.tasaAnual,
       aporteMensualCentavos:
           aporteMensualCentavos ?? this.aporteMensualCentavos,
+      institucion: institucion ?? this.institucion,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -752,6 +832,9 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
       map['aporte_mensual_centavos'] =
           Variable<int>(aporteMensualCentavos.value);
     }
+    if (institucion.present) {
+      map['institucion'] = Variable<String>(institucion.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -766,6 +849,7 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
           ..write('saldoInicialCentavos: $saldoInicialCentavos, ')
           ..write('tasaAnual: $tasaAnual, ')
           ..write('aporteMensualCentavos: $aporteMensualCentavos, ')
+          ..write('institucion: $institucion, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -812,6 +896,14 @@ class $TarjetasTable extends Tarjetas
   late final GeneratedColumn<int> pagoMinimoFijoCentavos = GeneratedColumn<int>(
       'pago_minimo_fijo_centavos', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _institucionMeta =
+      const VerificationMeta('institucion');
+  @override
+  late final GeneratedColumn<String> institucion = GeneratedColumn<String>(
+      'institucion', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(''));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -819,7 +911,8 @@ class $TarjetasTable extends Tarjetas
         saldoCentavos,
         tasaAnual,
         pagoMinimoPorcentaje,
-        pagoMinimoFijoCentavos
+        pagoMinimoFijoCentavos,
+        institucion
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -872,6 +965,12 @@ class $TarjetasTable extends Tarjetas
     } else if (isInserting) {
       context.missing(_pagoMinimoFijoCentavosMeta);
     }
+    if (data.containsKey('institucion')) {
+      context.handle(
+          _institucionMeta,
+          institucion.isAcceptableOrUnknown(
+              data['institucion']!, _institucionMeta));
+    }
     return context;
   }
 
@@ -895,6 +994,8 @@ class $TarjetasTable extends Tarjetas
       pagoMinimoFijoCentavos: attachedDatabase.typeMapping.read(
           DriftSqlType.int,
           data['${effectivePrefix}pago_minimo_fijo_centavos'])!,
+      institucion: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}institucion'])!,
     );
   }
 
@@ -911,13 +1012,15 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
   final double tasaAnual;
   final double pagoMinimoPorcentaje;
   final int pagoMinimoFijoCentavos;
+  final String institucion;
   const TarjetaFila(
       {required this.id,
       required this.nombre,
       required this.saldoCentavos,
       required this.tasaAnual,
       required this.pagoMinimoPorcentaje,
-      required this.pagoMinimoFijoCentavos});
+      required this.pagoMinimoFijoCentavos,
+      required this.institucion});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -927,6 +1030,7 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
     map['tasa_anual'] = Variable<double>(tasaAnual);
     map['pago_minimo_porcentaje'] = Variable<double>(pagoMinimoPorcentaje);
     map['pago_minimo_fijo_centavos'] = Variable<int>(pagoMinimoFijoCentavos);
+    map['institucion'] = Variable<String>(institucion);
     return map;
   }
 
@@ -938,6 +1042,7 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
       tasaAnual: Value(tasaAnual),
       pagoMinimoPorcentaje: Value(pagoMinimoPorcentaje),
       pagoMinimoFijoCentavos: Value(pagoMinimoFijoCentavos),
+      institucion: Value(institucion),
     );
   }
 
@@ -953,6 +1058,7 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
           serializer.fromJson<double>(json['pagoMinimoPorcentaje']),
       pagoMinimoFijoCentavos:
           serializer.fromJson<int>(json['pagoMinimoFijoCentavos']),
+      institucion: serializer.fromJson<String>(json['institucion']),
     );
   }
   @override
@@ -965,6 +1071,7 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
       'tasaAnual': serializer.toJson<double>(tasaAnual),
       'pagoMinimoPorcentaje': serializer.toJson<double>(pagoMinimoPorcentaje),
       'pagoMinimoFijoCentavos': serializer.toJson<int>(pagoMinimoFijoCentavos),
+      'institucion': serializer.toJson<String>(institucion),
     };
   }
 
@@ -974,7 +1081,8 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
           int? saldoCentavos,
           double? tasaAnual,
           double? pagoMinimoPorcentaje,
-          int? pagoMinimoFijoCentavos}) =>
+          int? pagoMinimoFijoCentavos,
+          String? institucion}) =>
       TarjetaFila(
         id: id ?? this.id,
         nombre: nombre ?? this.nombre,
@@ -983,6 +1091,7 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
         pagoMinimoPorcentaje: pagoMinimoPorcentaje ?? this.pagoMinimoPorcentaje,
         pagoMinimoFijoCentavos:
             pagoMinimoFijoCentavos ?? this.pagoMinimoFijoCentavos,
+        institucion: institucion ?? this.institucion,
       );
   TarjetaFila copyWithCompanion(TarjetasCompanion data) {
     return TarjetaFila(
@@ -998,6 +1107,8 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
       pagoMinimoFijoCentavos: data.pagoMinimoFijoCentavos.present
           ? data.pagoMinimoFijoCentavos.value
           : this.pagoMinimoFijoCentavos,
+      institucion:
+          data.institucion.present ? data.institucion.value : this.institucion,
     );
   }
 
@@ -1009,14 +1120,15 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
           ..write('saldoCentavos: $saldoCentavos, ')
           ..write('tasaAnual: $tasaAnual, ')
           ..write('pagoMinimoPorcentaje: $pagoMinimoPorcentaje, ')
-          ..write('pagoMinimoFijoCentavos: $pagoMinimoFijoCentavos')
+          ..write('pagoMinimoFijoCentavos: $pagoMinimoFijoCentavos, ')
+          ..write('institucion: $institucion')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(id, nombre, saldoCentavos, tasaAnual,
-      pagoMinimoPorcentaje, pagoMinimoFijoCentavos);
+      pagoMinimoPorcentaje, pagoMinimoFijoCentavos, institucion);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1026,7 +1138,8 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
           other.saldoCentavos == this.saldoCentavos &&
           other.tasaAnual == this.tasaAnual &&
           other.pagoMinimoPorcentaje == this.pagoMinimoPorcentaje &&
-          other.pagoMinimoFijoCentavos == this.pagoMinimoFijoCentavos);
+          other.pagoMinimoFijoCentavos == this.pagoMinimoFijoCentavos &&
+          other.institucion == this.institucion);
 }
 
 class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
@@ -1036,6 +1149,7 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
   final Value<double> tasaAnual;
   final Value<double> pagoMinimoPorcentaje;
   final Value<int> pagoMinimoFijoCentavos;
+  final Value<String> institucion;
   final Value<int> rowid;
   const TarjetasCompanion({
     this.id = const Value.absent(),
@@ -1044,6 +1158,7 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
     this.tasaAnual = const Value.absent(),
     this.pagoMinimoPorcentaje = const Value.absent(),
     this.pagoMinimoFijoCentavos = const Value.absent(),
+    this.institucion = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TarjetasCompanion.insert({
@@ -1053,6 +1168,7 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
     required double tasaAnual,
     required double pagoMinimoPorcentaje,
     required int pagoMinimoFijoCentavos,
+    this.institucion = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         nombre = Value(nombre),
@@ -1067,6 +1183,7 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
     Expression<double>? tasaAnual,
     Expression<double>? pagoMinimoPorcentaje,
     Expression<int>? pagoMinimoFijoCentavos,
+    Expression<String>? institucion,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1078,6 +1195,7 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
         'pago_minimo_porcentaje': pagoMinimoPorcentaje,
       if (pagoMinimoFijoCentavos != null)
         'pago_minimo_fijo_centavos': pagoMinimoFijoCentavos,
+      if (institucion != null) 'institucion': institucion,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1089,6 +1207,7 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
       Value<double>? tasaAnual,
       Value<double>? pagoMinimoPorcentaje,
       Value<int>? pagoMinimoFijoCentavos,
+      Value<String>? institucion,
       Value<int>? rowid}) {
     return TarjetasCompanion(
       id: id ?? this.id,
@@ -1098,6 +1217,7 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
       pagoMinimoPorcentaje: pagoMinimoPorcentaje ?? this.pagoMinimoPorcentaje,
       pagoMinimoFijoCentavos:
           pagoMinimoFijoCentavos ?? this.pagoMinimoFijoCentavos,
+      institucion: institucion ?? this.institucion,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1125,6 +1245,9 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
       map['pago_minimo_fijo_centavos'] =
           Variable<int>(pagoMinimoFijoCentavos.value);
     }
+    if (institucion.present) {
+      map['institucion'] = Variable<String>(institucion.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1140,6 +1263,358 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
           ..write('tasaAnual: $tasaAnual, ')
           ..write('pagoMinimoPorcentaje: $pagoMinimoPorcentaje, ')
           ..write('pagoMinimoFijoCentavos: $pagoMinimoFijoCentavos, ')
+          ..write('institucion: $institucion, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CuentasTable extends Cuentas with TableInfo<$CuentasTable, CuentaFila> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CuentasTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _institucionMeta =
+      const VerificationMeta('institucion');
+  @override
+  late final GeneratedColumn<String> institucion = GeneratedColumn<String>(
+      'institucion', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _nombreMeta = const VerificationMeta('nombre');
+  @override
+  late final GeneratedColumn<String> nombre = GeneratedColumn<String>(
+      'nombre', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _tipoMeta = const VerificationMeta('tipo');
+  @override
+  late final GeneratedColumn<int> tipo = GeneratedColumn<int>(
+      'tipo', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _saldoCentavosMeta =
+      const VerificationMeta('saldoCentavos');
+  @override
+  late final GeneratedColumn<int> saldoCentavos = GeneratedColumn<int>(
+      'saldo_centavos', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _tasaAnualMeta =
+      const VerificationMeta('tasaAnual');
+  @override
+  late final GeneratedColumn<double> tasaAnual = GeneratedColumn<double>(
+      'tasa_anual', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, institucion, nombre, tipo, saldoCentavos, tasaAnual];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cuentas';
+  @override
+  VerificationContext validateIntegrity(Insertable<CuentaFila> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('institucion')) {
+      context.handle(
+          _institucionMeta,
+          institucion.isAcceptableOrUnknown(
+              data['institucion']!, _institucionMeta));
+    } else if (isInserting) {
+      context.missing(_institucionMeta);
+    }
+    if (data.containsKey('nombre')) {
+      context.handle(_nombreMeta,
+          nombre.isAcceptableOrUnknown(data['nombre']!, _nombreMeta));
+    } else if (isInserting) {
+      context.missing(_nombreMeta);
+    }
+    if (data.containsKey('tipo')) {
+      context.handle(
+          _tipoMeta, tipo.isAcceptableOrUnknown(data['tipo']!, _tipoMeta));
+    } else if (isInserting) {
+      context.missing(_tipoMeta);
+    }
+    if (data.containsKey('saldo_centavos')) {
+      context.handle(
+          _saldoCentavosMeta,
+          saldoCentavos.isAcceptableOrUnknown(
+              data['saldo_centavos']!, _saldoCentavosMeta));
+    } else if (isInserting) {
+      context.missing(_saldoCentavosMeta);
+    }
+    if (data.containsKey('tasa_anual')) {
+      context.handle(_tasaAnualMeta,
+          tasaAnual.isAcceptableOrUnknown(data['tasa_anual']!, _tasaAnualMeta));
+    } else if (isInserting) {
+      context.missing(_tasaAnualMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CuentaFila map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CuentaFila(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      institucion: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}institucion'])!,
+      nombre: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}nombre'])!,
+      tipo: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}tipo'])!,
+      saldoCentavos: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}saldo_centavos'])!,
+      tasaAnual: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}tasa_anual'])!,
+    );
+  }
+
+  @override
+  $CuentasTable createAlias(String alias) {
+    return $CuentasTable(attachedDatabase, alias);
+  }
+}
+
+class CuentaFila extends DataClass implements Insertable<CuentaFila> {
+  final String id;
+  final String institucion;
+  final String nombre;
+  final int tipo;
+  final int saldoCentavos;
+  final double tasaAnual;
+  const CuentaFila(
+      {required this.id,
+      required this.institucion,
+      required this.nombre,
+      required this.tipo,
+      required this.saldoCentavos,
+      required this.tasaAnual});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['institucion'] = Variable<String>(institucion);
+    map['nombre'] = Variable<String>(nombre);
+    map['tipo'] = Variable<int>(tipo);
+    map['saldo_centavos'] = Variable<int>(saldoCentavos);
+    map['tasa_anual'] = Variable<double>(tasaAnual);
+    return map;
+  }
+
+  CuentasCompanion toCompanion(bool nullToAbsent) {
+    return CuentasCompanion(
+      id: Value(id),
+      institucion: Value(institucion),
+      nombre: Value(nombre),
+      tipo: Value(tipo),
+      saldoCentavos: Value(saldoCentavos),
+      tasaAnual: Value(tasaAnual),
+    );
+  }
+
+  factory CuentaFila.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CuentaFila(
+      id: serializer.fromJson<String>(json['id']),
+      institucion: serializer.fromJson<String>(json['institucion']),
+      nombre: serializer.fromJson<String>(json['nombre']),
+      tipo: serializer.fromJson<int>(json['tipo']),
+      saldoCentavos: serializer.fromJson<int>(json['saldoCentavos']),
+      tasaAnual: serializer.fromJson<double>(json['tasaAnual']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'institucion': serializer.toJson<String>(institucion),
+      'nombre': serializer.toJson<String>(nombre),
+      'tipo': serializer.toJson<int>(tipo),
+      'saldoCentavos': serializer.toJson<int>(saldoCentavos),
+      'tasaAnual': serializer.toJson<double>(tasaAnual),
+    };
+  }
+
+  CuentaFila copyWith(
+          {String? id,
+          String? institucion,
+          String? nombre,
+          int? tipo,
+          int? saldoCentavos,
+          double? tasaAnual}) =>
+      CuentaFila(
+        id: id ?? this.id,
+        institucion: institucion ?? this.institucion,
+        nombre: nombre ?? this.nombre,
+        tipo: tipo ?? this.tipo,
+        saldoCentavos: saldoCentavos ?? this.saldoCentavos,
+        tasaAnual: tasaAnual ?? this.tasaAnual,
+      );
+  CuentaFila copyWithCompanion(CuentasCompanion data) {
+    return CuentaFila(
+      id: data.id.present ? data.id.value : this.id,
+      institucion:
+          data.institucion.present ? data.institucion.value : this.institucion,
+      nombre: data.nombre.present ? data.nombre.value : this.nombre,
+      tipo: data.tipo.present ? data.tipo.value : this.tipo,
+      saldoCentavos: data.saldoCentavos.present
+          ? data.saldoCentavos.value
+          : this.saldoCentavos,
+      tasaAnual: data.tasaAnual.present ? data.tasaAnual.value : this.tasaAnual,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CuentaFila(')
+          ..write('id: $id, ')
+          ..write('institucion: $institucion, ')
+          ..write('nombre: $nombre, ')
+          ..write('tipo: $tipo, ')
+          ..write('saldoCentavos: $saldoCentavos, ')
+          ..write('tasaAnual: $tasaAnual')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, institucion, nombre, tipo, saldoCentavos, tasaAnual);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CuentaFila &&
+          other.id == this.id &&
+          other.institucion == this.institucion &&
+          other.nombre == this.nombre &&
+          other.tipo == this.tipo &&
+          other.saldoCentavos == this.saldoCentavos &&
+          other.tasaAnual == this.tasaAnual);
+}
+
+class CuentasCompanion extends UpdateCompanion<CuentaFila> {
+  final Value<String> id;
+  final Value<String> institucion;
+  final Value<String> nombre;
+  final Value<int> tipo;
+  final Value<int> saldoCentavos;
+  final Value<double> tasaAnual;
+  final Value<int> rowid;
+  const CuentasCompanion({
+    this.id = const Value.absent(),
+    this.institucion = const Value.absent(),
+    this.nombre = const Value.absent(),
+    this.tipo = const Value.absent(),
+    this.saldoCentavos = const Value.absent(),
+    this.tasaAnual = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CuentasCompanion.insert({
+    required String id,
+    required String institucion,
+    required String nombre,
+    required int tipo,
+    required int saldoCentavos,
+    required double tasaAnual,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        institucion = Value(institucion),
+        nombre = Value(nombre),
+        tipo = Value(tipo),
+        saldoCentavos = Value(saldoCentavos),
+        tasaAnual = Value(tasaAnual);
+  static Insertable<CuentaFila> custom({
+    Expression<String>? id,
+    Expression<String>? institucion,
+    Expression<String>? nombre,
+    Expression<int>? tipo,
+    Expression<int>? saldoCentavos,
+    Expression<double>? tasaAnual,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (institucion != null) 'institucion': institucion,
+      if (nombre != null) 'nombre': nombre,
+      if (tipo != null) 'tipo': tipo,
+      if (saldoCentavos != null) 'saldo_centavos': saldoCentavos,
+      if (tasaAnual != null) 'tasa_anual': tasaAnual,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CuentasCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? institucion,
+      Value<String>? nombre,
+      Value<int>? tipo,
+      Value<int>? saldoCentavos,
+      Value<double>? tasaAnual,
+      Value<int>? rowid}) {
+    return CuentasCompanion(
+      id: id ?? this.id,
+      institucion: institucion ?? this.institucion,
+      nombre: nombre ?? this.nombre,
+      tipo: tipo ?? this.tipo,
+      saldoCentavos: saldoCentavos ?? this.saldoCentavos,
+      tasaAnual: tasaAnual ?? this.tasaAnual,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (institucion.present) {
+      map['institucion'] = Variable<String>(institucion.value);
+    }
+    if (nombre.present) {
+      map['nombre'] = Variable<String>(nombre.value);
+    }
+    if (tipo.present) {
+      map['tipo'] = Variable<int>(tipo.value);
+    }
+    if (saldoCentavos.present) {
+      map['saldo_centavos'] = Variable<int>(saldoCentavos.value);
+    }
+    if (tasaAnual.present) {
+      map['tasa_anual'] = Variable<double>(tasaAnual.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CuentasCompanion(')
+          ..write('id: $id, ')
+          ..write('institucion: $institucion, ')
+          ..write('nombre: $nombre, ')
+          ..write('tipo: $tipo, ')
+          ..write('saldoCentavos: $saldoCentavos, ')
+          ..write('tasaAnual: $tasaAnual, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1152,12 +1627,13 @@ abstract class _$BaseDatos extends GeneratedDatabase {
   late final $MovimientosTable movimientos = $MovimientosTable(this);
   late final $InversionesTable inversiones = $InversionesTable(this);
   late final $TarjetasTable tarjetas = $TarjetasTable(this);
+  late final $CuentasTable cuentas = $CuentasTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [movimientos, inversiones, tarjetas];
+      [movimientos, inversiones, tarjetas, cuentas];
 }
 
 typedef $$MovimientosTableCreateCompanionBuilder = MovimientosCompanion
@@ -1170,6 +1646,7 @@ typedef $$MovimientosTableCreateCompanionBuilder = MovimientosCompanion
   required int frecuencia,
   required DateTime fechaInicio,
   Value<DateTime?> fechaFin,
+  Value<String?> cuentaId,
   Value<int> rowid,
 });
 typedef $$MovimientosTableUpdateCompanionBuilder = MovimientosCompanion
@@ -1182,6 +1659,7 @@ typedef $$MovimientosTableUpdateCompanionBuilder = MovimientosCompanion
   Value<int> frecuencia,
   Value<DateTime> fechaInicio,
   Value<DateTime?> fechaFin,
+  Value<String?> cuentaId,
   Value<int> rowid,
 });
 
@@ -1217,6 +1695,9 @@ class $$MovimientosTableFilterComposer
 
   ColumnFilters<DateTime> get fechaFin => $composableBuilder(
       column: $table.fechaFin, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get cuentaId => $composableBuilder(
+      column: $table.cuentaId, builder: (column) => ColumnFilters(column));
 }
 
 class $$MovimientosTableOrderingComposer
@@ -1252,6 +1733,9 @@ class $$MovimientosTableOrderingComposer
 
   ColumnOrderings<DateTime> get fechaFin => $composableBuilder(
       column: $table.fechaFin, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get cuentaId => $composableBuilder(
+      column: $table.cuentaId, builder: (column) => ColumnOrderings(column));
 }
 
 class $$MovimientosTableAnnotationComposer
@@ -1286,6 +1770,9 @@ class $$MovimientosTableAnnotationComposer
 
   GeneratedColumn<DateTime> get fechaFin =>
       $composableBuilder(column: $table.fechaFin, builder: (column) => column);
+
+  GeneratedColumn<String> get cuentaId =>
+      $composableBuilder(column: $table.cuentaId, builder: (column) => column);
 }
 
 class $$MovimientosTableTableManager extends RootTableManager<
@@ -1322,6 +1809,7 @@ class $$MovimientosTableTableManager extends RootTableManager<
             Value<int> frecuencia = const Value.absent(),
             Value<DateTime> fechaInicio = const Value.absent(),
             Value<DateTime?> fechaFin = const Value.absent(),
+            Value<String?> cuentaId = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               MovimientosCompanion(
@@ -1333,6 +1821,7 @@ class $$MovimientosTableTableManager extends RootTableManager<
             frecuencia: frecuencia,
             fechaInicio: fechaInicio,
             fechaFin: fechaFin,
+            cuentaId: cuentaId,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -1344,6 +1833,7 @@ class $$MovimientosTableTableManager extends RootTableManager<
             required int frecuencia,
             required DateTime fechaInicio,
             Value<DateTime?> fechaFin = const Value.absent(),
+            Value<String?> cuentaId = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               MovimientosCompanion.insert(
@@ -1355,6 +1845,7 @@ class $$MovimientosTableTableManager extends RootTableManager<
             frecuencia: frecuencia,
             fechaInicio: fechaInicio,
             fechaFin: fechaFin,
+            cuentaId: cuentaId,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
@@ -1390,6 +1881,7 @@ typedef $$InversionesTableCreateCompanionBuilder = InversionesCompanion
   required int saldoInicialCentavos,
   required double tasaAnual,
   required int aporteMensualCentavos,
+  Value<String> institucion,
   Value<int> rowid,
 });
 typedef $$InversionesTableUpdateCompanionBuilder = InversionesCompanion
@@ -1399,6 +1891,7 @@ typedef $$InversionesTableUpdateCompanionBuilder = InversionesCompanion
   Value<int> saldoInicialCentavos,
   Value<double> tasaAnual,
   Value<int> aporteMensualCentavos,
+  Value<String> institucion,
   Value<int> rowid,
 });
 
@@ -1427,6 +1920,9 @@ class $$InversionesTableFilterComposer
   ColumnFilters<int> get aporteMensualCentavos => $composableBuilder(
       column: $table.aporteMensualCentavos,
       builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get institucion => $composableBuilder(
+      column: $table.institucion, builder: (column) => ColumnFilters(column));
 }
 
 class $$InversionesTableOrderingComposer
@@ -1454,6 +1950,9 @@ class $$InversionesTableOrderingComposer
   ColumnOrderings<int> get aporteMensualCentavos => $composableBuilder(
       column: $table.aporteMensualCentavos,
       builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get institucion => $composableBuilder(
+      column: $table.institucion, builder: (column) => ColumnOrderings(column));
 }
 
 class $$InversionesTableAnnotationComposer
@@ -1479,6 +1978,9 @@ class $$InversionesTableAnnotationComposer
 
   GeneratedColumn<int> get aporteMensualCentavos => $composableBuilder(
       column: $table.aporteMensualCentavos, builder: (column) => column);
+
+  GeneratedColumn<String> get institucion => $composableBuilder(
+      column: $table.institucion, builder: (column) => column);
 }
 
 class $$InversionesTableTableManager extends RootTableManager<
@@ -1512,6 +2014,7 @@ class $$InversionesTableTableManager extends RootTableManager<
             Value<int> saldoInicialCentavos = const Value.absent(),
             Value<double> tasaAnual = const Value.absent(),
             Value<int> aporteMensualCentavos = const Value.absent(),
+            Value<String> institucion = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               InversionesCompanion(
@@ -1520,6 +2023,7 @@ class $$InversionesTableTableManager extends RootTableManager<
             saldoInicialCentavos: saldoInicialCentavos,
             tasaAnual: tasaAnual,
             aporteMensualCentavos: aporteMensualCentavos,
+            institucion: institucion,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -1528,6 +2032,7 @@ class $$InversionesTableTableManager extends RootTableManager<
             required int saldoInicialCentavos,
             required double tasaAnual,
             required int aporteMensualCentavos,
+            Value<String> institucion = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               InversionesCompanion.insert(
@@ -1536,6 +2041,7 @@ class $$InversionesTableTableManager extends RootTableManager<
             saldoInicialCentavos: saldoInicialCentavos,
             tasaAnual: tasaAnual,
             aporteMensualCentavos: aporteMensualCentavos,
+            institucion: institucion,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
@@ -1571,6 +2077,7 @@ typedef $$TarjetasTableCreateCompanionBuilder = TarjetasCompanion Function({
   required double tasaAnual,
   required double pagoMinimoPorcentaje,
   required int pagoMinimoFijoCentavos,
+  Value<String> institucion,
   Value<int> rowid,
 });
 typedef $$TarjetasTableUpdateCompanionBuilder = TarjetasCompanion Function({
@@ -1580,6 +2087,7 @@ typedef $$TarjetasTableUpdateCompanionBuilder = TarjetasCompanion Function({
   Value<double> tasaAnual,
   Value<double> pagoMinimoPorcentaje,
   Value<int> pagoMinimoFijoCentavos,
+  Value<String> institucion,
   Value<int> rowid,
 });
 
@@ -1611,6 +2119,9 @@ class $$TarjetasTableFilterComposer
   ColumnFilters<int> get pagoMinimoFijoCentavos => $composableBuilder(
       column: $table.pagoMinimoFijoCentavos,
       builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get institucion => $composableBuilder(
+      column: $table.institucion, builder: (column) => ColumnFilters(column));
 }
 
 class $$TarjetasTableOrderingComposer
@@ -1642,6 +2153,9 @@ class $$TarjetasTableOrderingComposer
   ColumnOrderings<int> get pagoMinimoFijoCentavos => $composableBuilder(
       column: $table.pagoMinimoFijoCentavos,
       builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get institucion => $composableBuilder(
+      column: $table.institucion, builder: (column) => ColumnOrderings(column));
 }
 
 class $$TarjetasTableAnnotationComposer
@@ -1670,6 +2184,9 @@ class $$TarjetasTableAnnotationComposer
 
   GeneratedColumn<int> get pagoMinimoFijoCentavos => $composableBuilder(
       column: $table.pagoMinimoFijoCentavos, builder: (column) => column);
+
+  GeneratedColumn<String> get institucion => $composableBuilder(
+      column: $table.institucion, builder: (column) => column);
 }
 
 class $$TarjetasTableTableManager extends RootTableManager<
@@ -1701,6 +2218,7 @@ class $$TarjetasTableTableManager extends RootTableManager<
             Value<double> tasaAnual = const Value.absent(),
             Value<double> pagoMinimoPorcentaje = const Value.absent(),
             Value<int> pagoMinimoFijoCentavos = const Value.absent(),
+            Value<String> institucion = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               TarjetasCompanion(
@@ -1710,6 +2228,7 @@ class $$TarjetasTableTableManager extends RootTableManager<
             tasaAnual: tasaAnual,
             pagoMinimoPorcentaje: pagoMinimoPorcentaje,
             pagoMinimoFijoCentavos: pagoMinimoFijoCentavos,
+            institucion: institucion,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -1719,6 +2238,7 @@ class $$TarjetasTableTableManager extends RootTableManager<
             required double tasaAnual,
             required double pagoMinimoPorcentaje,
             required int pagoMinimoFijoCentavos,
+            Value<String> institucion = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               TarjetasCompanion.insert(
@@ -1728,6 +2248,7 @@ class $$TarjetasTableTableManager extends RootTableManager<
             tasaAnual: tasaAnual,
             pagoMinimoPorcentaje: pagoMinimoPorcentaje,
             pagoMinimoFijoCentavos: pagoMinimoFijoCentavos,
+            institucion: institucion,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
@@ -1753,6 +2274,191 @@ typedef $$TarjetasTableProcessedTableManager = ProcessedTableManager<
     (TarjetaFila, BaseReferences<_$BaseDatos, $TarjetasTable, TarjetaFila>),
     TarjetaFila,
     PrefetchHooks Function()>;
+typedef $$CuentasTableCreateCompanionBuilder = CuentasCompanion Function({
+  required String id,
+  required String institucion,
+  required String nombre,
+  required int tipo,
+  required int saldoCentavos,
+  required double tasaAnual,
+  Value<int> rowid,
+});
+typedef $$CuentasTableUpdateCompanionBuilder = CuentasCompanion Function({
+  Value<String> id,
+  Value<String> institucion,
+  Value<String> nombre,
+  Value<int> tipo,
+  Value<int> saldoCentavos,
+  Value<double> tasaAnual,
+  Value<int> rowid,
+});
+
+class $$CuentasTableFilterComposer
+    extends Composer<_$BaseDatos, $CuentasTable> {
+  $$CuentasTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get institucion => $composableBuilder(
+      column: $table.institucion, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get nombre => $composableBuilder(
+      column: $table.nombre, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get tipo => $composableBuilder(
+      column: $table.tipo, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get saldoCentavos => $composableBuilder(
+      column: $table.saldoCentavos, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get tasaAnual => $composableBuilder(
+      column: $table.tasaAnual, builder: (column) => ColumnFilters(column));
+}
+
+class $$CuentasTableOrderingComposer
+    extends Composer<_$BaseDatos, $CuentasTable> {
+  $$CuentasTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get institucion => $composableBuilder(
+      column: $table.institucion, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get nombre => $composableBuilder(
+      column: $table.nombre, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get tipo => $composableBuilder(
+      column: $table.tipo, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get saldoCentavos => $composableBuilder(
+      column: $table.saldoCentavos,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get tasaAnual => $composableBuilder(
+      column: $table.tasaAnual, builder: (column) => ColumnOrderings(column));
+}
+
+class $$CuentasTableAnnotationComposer
+    extends Composer<_$BaseDatos, $CuentasTable> {
+  $$CuentasTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get institucion => $composableBuilder(
+      column: $table.institucion, builder: (column) => column);
+
+  GeneratedColumn<String> get nombre =>
+      $composableBuilder(column: $table.nombre, builder: (column) => column);
+
+  GeneratedColumn<int> get tipo =>
+      $composableBuilder(column: $table.tipo, builder: (column) => column);
+
+  GeneratedColumn<int> get saldoCentavos => $composableBuilder(
+      column: $table.saldoCentavos, builder: (column) => column);
+
+  GeneratedColumn<double> get tasaAnual =>
+      $composableBuilder(column: $table.tasaAnual, builder: (column) => column);
+}
+
+class $$CuentasTableTableManager extends RootTableManager<
+    _$BaseDatos,
+    $CuentasTable,
+    CuentaFila,
+    $$CuentasTableFilterComposer,
+    $$CuentasTableOrderingComposer,
+    $$CuentasTableAnnotationComposer,
+    $$CuentasTableCreateCompanionBuilder,
+    $$CuentasTableUpdateCompanionBuilder,
+    (CuentaFila, BaseReferences<_$BaseDatos, $CuentasTable, CuentaFila>),
+    CuentaFila,
+    PrefetchHooks Function()> {
+  $$CuentasTableTableManager(_$BaseDatos db, $CuentasTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CuentasTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CuentasTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CuentasTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> institucion = const Value.absent(),
+            Value<String> nombre = const Value.absent(),
+            Value<int> tipo = const Value.absent(),
+            Value<int> saldoCentavos = const Value.absent(),
+            Value<double> tasaAnual = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CuentasCompanion(
+            id: id,
+            institucion: institucion,
+            nombre: nombre,
+            tipo: tipo,
+            saldoCentavos: saldoCentavos,
+            tasaAnual: tasaAnual,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String institucion,
+            required String nombre,
+            required int tipo,
+            required int saldoCentavos,
+            required double tasaAnual,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CuentasCompanion.insert(
+            id: id,
+            institucion: institucion,
+            nombre: nombre,
+            tipo: tipo,
+            saldoCentavos: saldoCentavos,
+            tasaAnual: tasaAnual,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable<$CuentasTable, CuentaFila>(table),
+                    BaseReferences<_$BaseDatos, $CuentasTable, CuentaFila>(
+                        db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$CuentasTableProcessedTableManager = ProcessedTableManager<
+    _$BaseDatos,
+    $CuentasTable,
+    CuentaFila,
+    $$CuentasTableFilterComposer,
+    $$CuentasTableOrderingComposer,
+    $$CuentasTableAnnotationComposer,
+    $$CuentasTableCreateCompanionBuilder,
+    $$CuentasTableUpdateCompanionBuilder,
+    (CuentaFila, BaseReferences<_$BaseDatos, $CuentasTable, CuentaFila>),
+    CuentaFila,
+    PrefetchHooks Function()>;
 
 class $BaseDatosManager {
   final _$BaseDatos _db;
@@ -1763,4 +2469,6 @@ class $BaseDatosManager {
       $$InversionesTableTableManager(_db, _db.inversiones);
   $$TarjetasTableTableManager get tarjetas =>
       $$TarjetasTableTableManager(_db, _db.tarjetas);
+  $$CuentasTableTableManager get cuentas =>
+      $$CuentasTableTableManager(_db, _db.cuentas);
 }

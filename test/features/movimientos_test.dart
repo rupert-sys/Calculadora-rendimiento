@@ -29,7 +29,11 @@ void main() {
         find.widgetWithText(TextFormField, 'Descripción'), 'Renta');
     await tester.enterText(
         find.widgetWithText(TextFormField, 'Monto (MXN)'), '8,000');
-    await tester.ensureVisible(find.text('Guardar'));
+    await tester.dragUntilVisible(
+      find.text('Guardar'),
+      find.byType(ListView).last,
+      const Offset(0, -200),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar'));
     await tester
@@ -59,7 +63,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Agregar'));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Guardar'));
+    await tester.dragUntilVisible(
+      find.text('Guardar'),
+      find.byType(ListView).last,
+      const Offset(0, -200),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar'));
     await tester.pump();

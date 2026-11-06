@@ -34,6 +34,7 @@ class Movimiento {
     required this.frecuencia,
     required this.fechaInicio,
     this.fechaFin,
+    this.cuentaId,
   }) : assert(monto >= 0, 'El monto va en positivo; el tipo da el signo');
 
   final String id;
@@ -46,6 +47,9 @@ class Movimiento {
 
   /// Último día en que el movimiento aplica. `null` = sin fin.
   final DateTime? fechaFin;
+
+  /// Cuenta, inversión o tarjeta de donde sale o a donde llega el dinero.
+  final String? cuentaId;
 
   /// Cuánto suma este movimiento en el mes indicado (en positivo).
   Centavos montoEnMes(int anio, int mes) {
@@ -107,11 +111,15 @@ class Inversion {
     required this.saldoInicial,
     required this.tasaAnual,
     this.aporteMensual = 0,
+    this.institucion = '',
   });
 
   final String id;
   final String nombre;
   final Centavos saldoInicial;
+
+  /// Banco o casa de bolsa; vacío si no se indicó.
+  final String institucion;
 
   /// Tasa nominal anual como fracción: 0.08 = 8 %.
   final double tasaAnual;
@@ -128,16 +136,46 @@ class TarjetaCredito {
     required this.tasaAnual,
     this.pagoMinimoPorcentaje = 0.05,
     this.pagoMinimoFijo = 0,
+    this.institucion = '',
   });
 
   final String id;
   final String nombre;
   final Centavos saldo;
 
+  /// Banco que emite la tarjeta; vacío si no se indicó.
+  final String institucion;
+
   /// Tasa nominal anual como fracción: 0.45 = 45 %.
   final double tasaAnual;
   final double pagoMinimoPorcentaje;
   final Centavos pagoMinimoFijo;
+}
+
+// Se guarda por índice en la base de datos: los valores nuevos van al final.
+enum TipoCuenta { debito, ahorro }
+
+/// Cuenta bancaria: de débito o nómina, o de ahorro con rendimiento.
+/// Las cuentas de inversión son [Inversion] y las tarjetas [TarjetaCredito],
+/// todas ligadas a su institución por nombre.
+class Cuenta {
+  const Cuenta({
+    required this.id,
+    required this.institucion,
+    required this.nombre,
+    required this.tipo,
+    required this.saldo,
+    this.tasaAnual = 0,
+  });
+
+  final String id;
+  final String institucion;
+  final String nombre;
+  final TipoCuenta tipo;
+  final Centavos saldo;
+
+  /// Rendimiento anual de una cuenta de ahorro, como fracción.
+  final double tasaAnual;
 }
 
 /// Inflación anual que usa el simulador si no se indica otra.

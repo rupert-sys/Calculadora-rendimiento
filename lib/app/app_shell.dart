@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../features/inversiones/inversiones_screen.dart';
+import '../features/cuentas/cuentas_screen.dart';
 import '../features/movimientos/movimientos_screen.dart';
 import '../features/resumen/resumen_screen.dart';
 import '../features/simulador/simulador_screen.dart';
-import '../features/tarjetas/tarjetas_screen.dart';
 
 /// Navegación principal: barra inferior en teléfono, menú lateral en
 /// tablet y computadora.
@@ -24,8 +23,7 @@ class _AppShellState extends State<AppShell> {
   static const _pantallas = <Widget>[
     ResumenScreen(),
     MovimientosScreen(),
-    InversionesScreen(),
-    TarjetasScreen(),
+    CuentasScreen(),
     SimuladorScreen(),
   ];
 
@@ -41,14 +39,9 @@ class _AppShellState extends State<AppShell> {
       texto: 'Movimientos'
     ),
     (
-      icono: Icons.savings_outlined,
-      seleccionado: Icons.savings,
-      texto: 'Inversiones'
-    ),
-    (
-      icono: Icons.credit_card_outlined,
-      seleccionado: Icons.credit_card,
-      texto: 'Tarjetas'
+      icono: Icons.account_balance_outlined,
+      seleccionado: Icons.account_balance,
+      texto: 'Cuentas'
     ),
     (
       icono: Icons.show_chart,

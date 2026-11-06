@@ -22,12 +22,17 @@ class InversionesRepositorio {
             saldoInicialCentavos: i.saldoInicial,
             tasaAnual: i.tasaAnual,
             aporteMensualCentavos: i.aporteMensual,
+            institucion: Value(i.institucion),
           ),
         );
   }
 
+  /// Borra el producto y suelta los movimientos que estaban ligados a él.
   Future<void> borrar(String id) {
-    return (_db.delete(_db.inversiones)..where((i) => i.id.equals(id))).go();
+    return _db.transaction(() async {
+      await (_db.delete(_db.inversiones)..where((i) => i.id.equals(id))).go();
+      await _db.desligarMovimientos(id);
+    });
   }
 
   Inversion _aModelo(InversionFila f) => Inversion(
@@ -36,5 +41,6 @@ class InversionesRepositorio {
         saldoInicial: f.saldoInicialCentavos,
         tasaAnual: f.tasaAnual,
         aporteMensual: f.aporteMensualCentavos,
+        institucion: f.institucion,
       );
 }

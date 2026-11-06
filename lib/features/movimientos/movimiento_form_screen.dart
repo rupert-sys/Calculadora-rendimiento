@@ -29,6 +29,7 @@ class _MovimientoFormScreenState extends ConsumerState<MovimientoFormScreen> {
   late Frecuencia _frecuencia;
   late DateTime _inicio;
   DateTime? _fin;
+  String? _cuentaId;
 
   bool get _editando => widget.movimiento != null;
 
@@ -51,6 +52,7 @@ class _MovimientoFormScreenState extends ConsumerState<MovimientoFormScreen> {
     final hoy = DateTime.now();
     _inicio = m?.fechaInicio ?? DateTime(hoy.year, hoy.month, hoy.day);
     _fin = m?.fechaFin;
+    _cuentaId = m?.cuentaId;
   }
 
   @override
@@ -90,6 +92,7 @@ class _MovimientoFormScreenState extends ConsumerState<MovimientoFormScreen> {
       frecuencia: _frecuencia,
       fechaInicio: _inicio,
       fechaFin: _frecuencia == Frecuencia.unica ? null : _fin,
+      cuentaId: _cuentaId,
     );
     await ref.read(movimientosRepositorioProvider).guardar(m);
     if (mounted) Navigator.of(context).pop();
@@ -170,6 +173,11 @@ class _MovimientoFormScreenState extends ConsumerState<MovimientoFormScreen> {
               onChanged: (v) => setState(() => _categoriaId = v!),
             ),
             const SizedBox(height: 16),
+            _CampoCuenta(
+              valor: _cuentaId,
+              onChanged: (v) => setState(() => _cuentaId = v),
+            ),
+            const SizedBox(height: 16),
             DropdownButtonFormField<Frecuencia>(
               initialValue: _frecuencia,
               decoration: const InputDecoration(labelText: 'Frecuencia'),
@@ -219,6 +227,37 @@ class _MovimientoFormScreenState extends ConsumerState<MovimientoFormScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Cuenta, inversión o tarjeta ligada al movimiento; opcional.
+class _CampoCuenta extends ConsumerWidget {
+  const _CampoCuenta({required this.valor, required this.onChanged});
+
+  final String? valor;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final productos = ref.watch(productosProvider);
+    // Si el producto se borró mientras tanto, se muestra como sin cuenta.
+    final actual = productos.containsKey(valor) ? valor : null;
+
+    return DropdownButtonFormField<String?>(
+      key: ValueKey(productos.length),
+      initialValue: actual,
+      isExpanded: true,
+      decoration: const InputDecoration(labelText: 'Cuenta o tarjeta'),
+      items: [
+        const DropdownMenuItem(value: null, child: Text('Ninguna')),
+        for (final p in productos.entries)
+          DropdownMenuItem(
+            value: p.key,
+            child: Text(p.value, overflow: TextOverflow.ellipsis),
+          ),
+      ],
+      onChanged: onChanged,
     );
   }
 }

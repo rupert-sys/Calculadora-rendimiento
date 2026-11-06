@@ -5,7 +5,9 @@ import '../../core/finanzas/dinero.dart';
 import '../../core/finanzas/inversion.dart';
 import '../../core/finanzas/modelos.dart';
 import '../../data/proveedores.dart';
+import '../comun/campo_institucion.dart';
 import '../comun/campos.dart';
+import '../comun/movimientos_ligados.dart';
 
 /// Crea o edita una inversión y muestra cuánto valdrá en el tiempo.
 class InversionFormScreen extends ConsumerStatefulWidget {
@@ -20,6 +22,7 @@ class InversionFormScreen extends ConsumerStatefulWidget {
 
 class _InversionFormScreenState extends ConsumerState<InversionFormScreen> {
   final _form = GlobalKey<FormState>();
+  late final TextEditingController _institucion;
   late final TextEditingController _nombre;
   late final TextEditingController _saldo;
   late final TextEditingController _tasa;
@@ -29,6 +32,7 @@ class _InversionFormScreenState extends ConsumerState<InversionFormScreen> {
   void initState() {
     super.initState();
     final i = widget.inversion;
+    _institucion = TextEditingController(text: i?.institucion ?? '');
     _nombre = TextEditingController(text: i?.nombre ?? '');
     _saldo = TextEditingController(
       text: i == null ? '' : aUnidades(i.saldoInicial).toStringAsFixed(2),
@@ -43,6 +47,7 @@ class _InversionFormScreenState extends ConsumerState<InversionFormScreen> {
 
   @override
   void dispose() {
+    _institucion.dispose();
     _nombre.dispose();
     _saldo.dispose();
     _tasa.dispose();
@@ -63,6 +68,7 @@ class _InversionFormScreenState extends ConsumerState<InversionFormScreen> {
       saldoInicial: aCentavos(saldo),
       tasaAnual: tasa / 100,
       aporteMensual: aCentavos(aporte),
+      institucion: _institucion.text.trim(),
     );
   }
 
@@ -106,6 +112,8 @@ class _InversionFormScreenState extends ConsumerState<InversionFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            CampoInstitucion(controller: _institucion),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _nombre,
               decoration: const InputDecoration(labelText: 'Nombre'),
@@ -138,6 +146,10 @@ class _InversionFormScreenState extends ConsumerState<InversionFormScreen> {
             if (actual != null) _Proyeccion(inversion: actual),
             const SizedBox(height: 24),
             FilledButton(onPressed: _guardar, child: const Text('Guardar')),
+            if (widget.inversion != null) ...[
+              const SizedBox(height: 24),
+              MovimientosLigados(productoId: widget.inversion!.id),
+            ],
           ],
         ),
       ),
