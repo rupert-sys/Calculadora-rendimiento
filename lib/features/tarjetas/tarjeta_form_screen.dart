@@ -5,7 +5,9 @@ import '../../core/finanzas/dinero.dart';
 import '../../core/finanzas/modelos.dart';
 import '../../core/finanzas/tarjeta.dart';
 import '../../data/proveedores.dart';
+import '../comun/campo_institucion.dart';
 import '../comun/campos.dart';
+import '../comun/movimientos_ligados.dart';
 
 /// Crea o edita una tarjeta y compara cuánto cuesta pagarla de distintas formas.
 class TarjetaFormScreen extends ConsumerStatefulWidget {
@@ -19,17 +21,22 @@ class TarjetaFormScreen extends ConsumerStatefulWidget {
 
 class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
   final _form = GlobalKey<FormState>();
+  late final TextEditingController _institucion;
   late final TextEditingController _nombre;
   late final TextEditingController _saldo;
   late final TextEditingController _tasa;
   late final TextEditingController _minimoPct;
   late final TextEditingController _minimoFijo;
+  late final TextEditingController _sinIntereses;
+  int? _diaCorte;
+  int? _diaPago;
   final _pagoFijo = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     final t = widget.tarjeta;
+    _institucion = TextEditingController(text: t?.institucion ?? '');
     _nombre = TextEditingController(text: t?.nombre ?? '');
     _saldo = TextEditingController(
       text: t == null ? '' : aUnidades(t.saldo).toStringAsFixed(2),
@@ -43,16 +50,26 @@ class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
     _minimoFijo = TextEditingController(
       text: aUnidades(t?.pagoMinimoFijo ?? 0).toStringAsFixed(2),
     );
+    final sinIntereses = t?.pagoSinIntereses;
+    _sinIntereses = TextEditingController(
+      text: sinIntereses == null
+          ? ''
+          : aUnidades(sinIntereses).toStringAsFixed(2),
+    );
+    _diaCorte = t?.diaCorte;
+    _diaPago = t?.diaPago;
   }
 
   @override
   void dispose() {
     for (final c in [
+      _institucion,
       _nombre,
       _saldo,
       _tasa,
       _minimoPct,
       _minimoFijo,
+      _sinIntereses,
       _pagoFijo
     ]) {
       c.dispose();
@@ -68,6 +85,9 @@ class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
     if (saldo == null || tasa == null || pct == null || fijo == null) {
       return null;
     }
+    final sinIntereses = _sinIntereses.text.trim().isEmpty
+        ? null
+        : leerMonto(_sinIntereses.text);
     return TarjetaCredito(
       id: widget.tarjeta?.id ??
           DateTime.now().microsecondsSinceEpoch.toString(),
@@ -76,6 +96,10 @@ class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
       tasaAnual: tasa / 100,
       pagoMinimoPorcentaje: pct / 100,
       pagoMinimoFijo: aCentavos(fijo),
+      institucion: _institucion.text.trim(),
+      diaCorte: _diaCorte,
+      diaPago: _diaPago,
+      pagoSinIntereses: sinIntereses == null ? null : aCentavos(sinIntereses),
     );
   }
 
@@ -121,6 +145,8 @@ class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            CampoInstitucion(controller: _institucion),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _nombre,
               decoration:
@@ -131,9 +157,52 @@ class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
             const SizedBox(height: 16),
             CampoNumero(
               controller: _saldo,
-              etiqueta: 'Saldo a pagar (MXN)',
+              etiqueta: 'Saldo total (MXN)',
               prefijo: r'$ ',
               onChanged: refrescar,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _sinIntereses,
+              decoration: const InputDecoration(
+                labelText: 'Pago para no generar intereses (MXN)',
+                prefixText: r'$ ',
+                helperText:
+                    'Viene en tu estado de cuenta. Vacío = el saldo total',
+              ),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              onChanged: refrescar,
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) return null;
+                final n = leerMonto(v);
+                if (n == null) return 'Escribe un número';
+                final saldo = leerMonto(_saldo.text);
+                if (saldo != null && n > saldo) {
+                  return 'No puede ser mayor al saldo total';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _CampoDia(
+                    etiqueta: 'Día de corte',
+                    valor: _diaCorte,
+                    onChanged: (d) => setState(() => _diaCorte = d),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _CampoDia(
+                    etiqueta: 'Día límite de pago',
+                    valor: _diaPago,
+                    onChanged: (d) => setState(() => _diaPago = d),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             CampoNumero(
@@ -189,6 +258,10 @@ class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
             ],
             const SizedBox(height: 24),
             FilledButton(onPressed: _guardar, child: const Text('Guardar')),
+            if (widget.tarjeta != null) ...[
+              const SizedBox(height: 24),
+              MovimientosLigados(productoId: widget.tarjeta!.id),
+            ],
           ],
         ),
       ),
@@ -264,6 +337,34 @@ class _Opcion extends StatelessWidget {
       ),
       isThreeLine: lineas.length > 1,
       trailing: r.seSalda ? Text(formatearPesos(r.pagadoTotal)) : null,
+    );
+  }
+}
+
+/// Día del mes, de 1 a 31, o sin indicar.
+class _CampoDia extends StatelessWidget {
+  const _CampoDia({
+    required this.etiqueta,
+    required this.valor,
+    required this.onChanged,
+  });
+
+  final String etiqueta;
+  final int? valor;
+  final ValueChanged<int?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<int?>(
+      initialValue: valor,
+      isExpanded: true,
+      decoration: InputDecoration(labelText: etiqueta),
+      items: [
+        const DropdownMenuItem(value: null, child: Text('Sin indicar')),
+        for (var d = 1; d <= 31; d++)
+          DropdownMenuItem(value: d, child: Text('$d')),
+      ],
+      onChanged: onChanged,
     );
   }
 }

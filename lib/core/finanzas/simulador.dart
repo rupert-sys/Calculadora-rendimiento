@@ -99,8 +99,15 @@ ResultadoSimulacion simular({
     for (var i = 0; i < inversiones.length; i++) {
       final inv = inversiones.elementAt(i);
       final saldo = saldosInv.elementAt(i);
-      saldosInv[i] =
-          saldo + (saldo * inv.tasaAnual / 12).round() + inv.aporteMensual;
+      final tasa = tasaMensualEquivalente(inv.tasaAnual, inv.capitalizacion);
+      final interes = (saldo * tasa).round();
+      if (inv.depositaRendimientos) {
+        // El rendimiento llega a la cuenta en lugar de reinvertirse.
+        saldosInv[i] = saldo + inv.aporteMensual;
+        efectivo += interes;
+      } else {
+        saldosInv[i] = saldo + interes + inv.aporteMensual;
+      }
       efectivo -= inv.aporteMensual;
     }
 

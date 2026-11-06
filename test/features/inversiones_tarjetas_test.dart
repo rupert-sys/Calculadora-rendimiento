@@ -10,6 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets('agregar una inversión la muestra en la lista', (tester) async {
+    tester.view.physicalSize = const Size(800, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final db = BaseDatos(NativeDatabase.memory());
     await tester.pumpWidget(
       ProviderScope(
@@ -18,11 +21,15 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Inversiones').last);
+    await tester.tap(find.text('Cuentas').last);
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Agregar'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Inversión'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.widgetWithText(TextFormField, 'Institución'), 'GBM');
     await tester.enterText(
         find.widgetWithText(TextFormField, 'Nombre'), 'Cetes');
     await tester.enterText(
@@ -43,7 +50,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Cetes'), findsOneWidget);
-    expect(find.text('Total invertido hoy'), findsOneWidget);
+    expect(find.text('GBM'), findsOneWidget);
+    expect(find.text('Patrimonio hoy'), findsOneWidget);
     expect(find.text(r'$10,000.00'), findsWidgets);
 
     await _cerrar(tester, db);
@@ -51,6 +59,9 @@ void main() {
 
   testWidgets('el comparador avisa cuando el pago no cubre los intereses',
       (tester) async {
+    tester.view.physicalSize = const Size(800, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final db = BaseDatos(NativeDatabase.memory());
     const tarjeta = TarjetaCredito(
       id: 'visa',

@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/finanzas/cuentas.dart';
 import '../../core/finanzas/dinero.dart';
 import '../../core/finanzas/modelos.dart';
 import '../../core/finanzas/simulador.dart';
@@ -33,7 +34,7 @@ class _SimuladorScreenState extends ConsumerState<SimuladorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final datos = ref.watch(datosSimulacionProvider);
+    final datos = ref.watch(datosFinancierosProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Simulador')),
@@ -42,13 +43,14 @@ class _SimuladorScreenState extends ConsumerState<SimuladorScreen> {
         error: (e, _) => Center(child: Text('No se pudo simular: $e')),
         data: (d) {
           if (d.movimientos.isEmpty &&
+              d.cuentas.isEmpty &&
               d.inversiones.isEmpty &&
               d.tarjetas.isEmpty) {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.all(24),
                 child: Text(
-                  'Registra tus ingresos, gastos, inversiones o tarjetas para simular tu futuro.',
+                  'Registra tus ingresos, gastos, cuentas, inversiones o tarjetas para simular tu futuro.',
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -68,8 +70,12 @@ class _SimuladorScreenState extends ConsumerState<SimuladorScreen> {
                 escenario: e,
                 inicio: inicio,
                 movimientos: d.movimientos,
-                inversiones: d.inversiones,
+                inversiones: [
+                  ...d.inversiones,
+                  ...ahorrosComoInversiones(d.cuentas),
+                ],
                 tarjetas: d.tarjetas,
+                efectivoInicial: efectivoDeCuentas(d.cuentas),
               );
           final rBase = correr(base);
           final rQue = correr(que);
@@ -106,7 +112,8 @@ class _SimuladorScreenState extends ConsumerState<SimuladorScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Patrimonio = efectivo acumulado + inversiones − deudas. '
+                'Patrimonio = efectivo (arranca con tus cuentas de débito) '
+                '+ ahorros e inversiones − deudas. '
                 'Los montos de tus movimientos se mantienen fijos; '
                 '"en pesos de hoy" descuenta la inflación.',
                 style: Theme.of(context).textTheme.bodySmall,

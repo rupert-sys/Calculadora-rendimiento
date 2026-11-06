@@ -28,6 +28,7 @@ class MovimientosRepositorio {
             frecuencia: m.frecuencia.index,
             fechaInicio: m.fechaInicio,
             fechaFin: Value(m.fechaFin),
+            cuentaId: Value(m.cuentaId),
           ),
         );
   }
@@ -46,6 +47,7 @@ class MovimientosRepositorio {
       frecuencia: Frecuencia.values[f.frecuencia],
       fechaInicio: f.fechaInicio,
       fechaFin: f.fechaFin,
+      cuentaId: f.cuentaId,
     );
   }
 }

@@ -14,6 +14,7 @@ class Movimientos extends Table {
   IntColumn get frecuencia => integer()();
   DateTimeColumn get fechaInicio => dateTime()();
   DateTimeColumn get fechaFin => dateTime().nullable()();
+  TextColumn get cuentaId => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -27,6 +28,9 @@ class Inversiones extends Table {
   IntColumn get saldoInicialCentavos => integer()();
   RealColumn get tasaAnual => real()();
   IntColumn get aporteMensualCentavos => integer()();
+  TextColumn get institucion => text().withDefault(const Constant(''))();
+  IntColumn get capitalizacion => integer().withDefault(const Constant(2))();
+  TextColumn get cuentaDestinoId => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -40,27 +44,77 @@ class Tarjetas extends Table {
   RealColumn get tasaAnual => real()();
   RealColumn get pagoMinimoPorcentaje => real()();
   IntColumn get pagoMinimoFijoCentavos => integer()();
+  TextColumn get institucion => text().withDefault(const Constant(''))();
+  IntColumn get diaCorte => integer().nullable()();
+  IntColumn get diaPago => integer().nullable()();
+  IntColumn get pagoSinInteresesCentavos => integer().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [Movimientos, Inversiones, Tarjetas])
+/// Cuentas de débito y de ahorro.
+@DataClassName('CuentaFila')
+class Cuentas extends Table {
+  TextColumn get id => text()();
+  TextColumn get institucion => text()();
+  TextColumn get nombre => text()();
+  IntColumn get tipo => integer()();
+  IntColumn get saldoCentavos => integer()();
+  RealColumn get tasaAnual => real()();
+  IntColumn get capitalizacion => integer().withDefault(const Constant(2))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DriftDatabase(tables: [Movimientos, Inversiones, Tarjetas, Cuentas])
 class BaseDatos extends _$BaseDatos {
   BaseDatos([QueryExecutor? executor]) : super(executor ?? _abrir());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onUpgrade: (m, desde, hasta) async {
+          // Una tabla creada aquí ya trae todas sus columnas actuales, así
+          // que solo se agregan columnas a las tablas que ya existían.
           if (desde < 2) {
             await m.createTable(inversiones);
             await m.createTable(tarjetas);
           }
+          if (desde < 3) {
+            await m.createTable(cuentas);
+            await m.addColumn(movimientos, movimientos.cuentaId);
+          }
+          if (desde == 2) {
+            await m.addColumn(inversiones, inversiones.institucion);
+            await m.addColumn(tarjetas, tarjetas.institucion);
+          }
+          if (desde >= 2 && desde < 4) {
+            await m.addColumn(inversiones, inversiones.capitalizacion);
+            await m.addColumn(tarjetas, tarjetas.diaCorte);
+            await m.addColumn(tarjetas, tarjetas.diaPago);
+            await m.addColumn(tarjetas, tarjetas.pagoSinInteresesCentavos);
+          }
+          if (desde == 3) {
+            await m.addColumn(cuentas, cuentas.capitalizacion);
+          }
+          if (desde >= 2 && desde < 5) {
+            await m.addColumn(inversiones, inversiones.cuentaDestinoId);
+          }
         },
       );
+
+  /// Quita la liga de los movimientos que apuntaban al producto [id] y de
+  /// las inversiones que depositaban ahí sus rendimientos.
+  Future<void> desligarMovimientos(String id) async {
+    await (update(movimientos)..where((m) => m.cuentaId.equals(id)))
+        .write(const MovimientosCompanion(cuentaId: Value(null)));
+    await (update(inversiones)..where((i) => i.cuentaDestinoId.equals(id)))
+        .write(const InversionesCompanion(cuentaDestinoId: Value(null)));
+  }
 
   /// SQLite local en Android, iOS, escritorio y web.
   static QueryExecutor _abrir() {

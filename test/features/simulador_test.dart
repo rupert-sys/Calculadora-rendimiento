@@ -9,13 +9,14 @@ import 'package:flutter_test/flutter_test.dart';
 Widget _app(
   ({
     List<Movimiento> movimientos,
+    List<Cuenta> cuentas,
     List<Inversion> inversiones,
     List<TarjetaCredito> tarjetas,
   }) datos,
 ) {
   return ProviderScope(
     overrides: [
-      datosSimulacionProvider.overrideWithValue(AsyncValue.data(datos))
+      datosFinancierosProvider.overrideWithValue(AsyncValue.data(datos))
     ],
     child: const MaterialApp(home: SimuladorScreen()),
   );
@@ -23,8 +24,8 @@ Widget _app(
 
 void main() {
   testWidgets('sin datos pide registrar movimientos', (tester) async {
-    await tester
-        .pumpWidget(_app((movimientos: [], inversiones: [], tarjetas: [])));
+    await tester.pumpWidget(
+        _app((movimientos: [], cuentas: [], inversiones: [], tarjetas: [])));
     expect(find.textContaining('Registra tus ingresos'), findsOneWidget);
   });
 
@@ -42,8 +43,8 @@ void main() {
       frecuencia: Frecuencia.mensual,
       fechaInicio: DateTime(2020, 1, 1),
     );
-    await tester.pumpWidget(
-        _app((movimientos: [sueldo], inversiones: [], tarjetas: [])));
+    await tester.pumpWidget(_app(
+        (movimientos: [sueldo], cuentas: [], inversiones: [], tarjetas: [])));
 
     expect(find.text('Patrimonio en 10 años'), findsOneWidget);
     // 30,000 al mes por 120 meses

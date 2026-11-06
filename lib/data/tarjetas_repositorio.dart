@@ -23,12 +23,20 @@ class TarjetasRepositorio {
             tasaAnual: t.tasaAnual,
             pagoMinimoPorcentaje: t.pagoMinimoPorcentaje,
             pagoMinimoFijoCentavos: t.pagoMinimoFijo,
+            institucion: Value(t.institucion),
+            diaCorte: Value(t.diaCorte),
+            diaPago: Value(t.diaPago),
+            pagoSinInteresesCentavos: Value(t.pagoSinIntereses),
           ),
         );
   }
 
+  /// Borra el producto y suelta los movimientos que estaban ligados a él.
   Future<void> borrar(String id) {
-    return (_db.delete(_db.tarjetas)..where((t) => t.id.equals(id))).go();
+    return _db.transaction(() async {
+      await (_db.delete(_db.tarjetas)..where((t) => t.id.equals(id))).go();
+      await _db.desligarMovimientos(id);
+    });
   }
 
   TarjetaCredito _aModelo(TarjetaFila f) => TarjetaCredito(
@@ -38,5 +46,9 @@ class TarjetasRepositorio {
         tasaAnual: f.tasaAnual,
         pagoMinimoPorcentaje: f.pagoMinimoPorcentaje,
         pagoMinimoFijo: f.pagoMinimoFijoCentavos,
+        institucion: f.institucion,
+        diaCorte: f.diaCorte,
+        diaPago: f.diaPago,
+        pagoSinIntereses: f.pagoSinInteresesCentavos,
       );
 }
