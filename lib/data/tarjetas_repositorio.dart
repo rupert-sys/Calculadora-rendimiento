@@ -24,6 +24,9 @@ class TarjetasRepositorio {
             pagoMinimoPorcentaje: t.pagoMinimoPorcentaje,
             pagoMinimoFijoCentavos: t.pagoMinimoFijo,
             institucion: Value(t.institucion),
+            diaCorte: Value(t.diaCorte),
+            diaPago: Value(t.diaPago),
+            pagoSinInteresesCentavos: Value(t.pagoSinIntereses),
           ),
         );
   }
@@ -44,5 +47,8 @@ class TarjetasRepositorio {
         pagoMinimoPorcentaje: f.pagoMinimoPorcentaje,
         pagoMinimoFijo: f.pagoMinimoFijoCentavos,
         institucion: f.institucion,
+        diaCorte: f.diaCorte,
+        diaPago: f.diaPago,
+        pagoSinIntereses: f.pagoSinInteresesCentavos,
       );
 }

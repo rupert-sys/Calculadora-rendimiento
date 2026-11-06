@@ -93,5 +93,6 @@ List<Inversion> ahorrosComoInversiones(List<Cuenta> cuentas) => [
             saldoInicial: c.saldo,
             tasaAnual: c.tasaAnual,
             institucion: c.institucion,
+            capitalizacion: c.capitalizacion,
           ),
     ];

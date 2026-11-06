@@ -77,3 +77,21 @@ ResultadoTarjeta simularTarjeta(
     saldos: saldos,
   );
 }
+
+/// Lo que hay que pagar para no generar intereses: lo que diga el estado de
+/// cuenta o, si no se capturó, el saldo completo.
+Centavos pagoParaNoGenerarIntereses(TarjetaCredito t) =>
+    math.min(t.pagoSinIntereses ?? t.saldo, t.saldo);
+
+/// La próxima fecha, a partir de [desde] (incluida), que cae en el [dia] del
+/// mes. En meses más cortos se usa el último día: el 31 cae el 30 de abril.
+DateTime proximoDiaDelMes(int dia, DateTime desde) {
+  final hoy = DateTime(desde.year, desde.month, desde.day);
+  DateTime enMes(int anio, int mes) {
+    final ultimo = DateTime(anio, mes + 1, 0).day;
+    return DateTime(anio, mes, math.min(dia, ultimo));
+  }
+
+  final esteMes = enMes(hoy.year, hoy.month);
+  return esteMes.isBefore(hoy) ? enMes(hoy.year, hoy.month + 1) : esteMes;
+}

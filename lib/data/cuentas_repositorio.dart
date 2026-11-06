@@ -26,6 +26,7 @@ class CuentasRepositorio {
             tipo: c.tipo.index,
             saldoCentavos: c.saldo,
             tasaAnual: c.tasaAnual,
+            capitalizacion: Value(c.capitalizacion.index),
           ),
         );
   }
@@ -45,5 +46,6 @@ class CuentasRepositorio {
         tipo: TipoCuenta.values[f.tipo],
         saldo: f.saldoCentavos,
         tasaAnual: f.tasaAnual,
+        capitalizacion: Capitalizacion.values[f.capitalizacion],
       );
 }

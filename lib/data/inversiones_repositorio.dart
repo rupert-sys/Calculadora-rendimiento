@@ -23,6 +23,7 @@ class InversionesRepositorio {
             tasaAnual: i.tasaAnual,
             aporteMensualCentavos: i.aporteMensual,
             institucion: Value(i.institucion),
+            capitalizacion: Value(i.capitalizacion.index),
           ),
         );
   }
@@ -42,5 +43,6 @@ class InversionesRepositorio {
         tasaAnual: f.tasaAnual,
         aporteMensual: f.aporteMensualCentavos,
         institucion: f.institucion,
+        capitalizacion: Capitalizacion.values[f.capitalizacion],
       );
 }

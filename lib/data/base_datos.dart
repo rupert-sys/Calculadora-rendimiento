@@ -29,6 +29,7 @@ class Inversiones extends Table {
   RealColumn get tasaAnual => real()();
   IntColumn get aporteMensualCentavos => integer()();
   TextColumn get institucion => text().withDefault(const Constant(''))();
+  IntColumn get capitalizacion => integer().withDefault(const Constant(2))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -43,6 +44,9 @@ class Tarjetas extends Table {
   RealColumn get pagoMinimoPorcentaje => real()();
   IntColumn get pagoMinimoFijoCentavos => integer()();
   TextColumn get institucion => text().withDefault(const Constant(''))();
+  IntColumn get diaCorte => integer().nullable()();
+  IntColumn get diaPago => integer().nullable()();
+  IntColumn get pagoSinInteresesCentavos => integer().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -57,6 +61,7 @@ class Cuentas extends Table {
   IntColumn get tipo => integer()();
   IntColumn get saldoCentavos => integer()();
   RealColumn get tasaAnual => real()();
+  IntColumn get capitalizacion => integer().withDefault(const Constant(2))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -67,22 +72,33 @@ class BaseDatos extends _$BaseDatos {
   BaseDatos([QueryExecutor? executor]) : super(executor ?? _abrir());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onUpgrade: (m, desde, hasta) async {
+          // Una tabla creada aquí ya trae todas sus columnas actuales, así
+          // que solo se agregan columnas a las tablas que ya existían.
           if (desde < 2) {
-            // Ya se crean con la columna de institución.
             await m.createTable(inversiones);
             await m.createTable(tarjetas);
-          } else if (desde < 3) {
-            await m.addColumn(inversiones, inversiones.institucion);
-            await m.addColumn(tarjetas, tarjetas.institucion);
           }
           if (desde < 3) {
             await m.createTable(cuentas);
             await m.addColumn(movimientos, movimientos.cuentaId);
+          }
+          if (desde == 2) {
+            await m.addColumn(inversiones, inversiones.institucion);
+            await m.addColumn(tarjetas, tarjetas.institucion);
+          }
+          if (desde >= 2 && desde < 4) {
+            await m.addColumn(inversiones, inversiones.capitalizacion);
+            await m.addColumn(tarjetas, tarjetas.diaCorte);
+            await m.addColumn(tarjetas, tarjetas.diaPago);
+            await m.addColumn(tarjetas, tarjetas.pagoSinInteresesCentavos);
+          }
+          if (desde == 3) {
+            await m.addColumn(cuentas, cuentas.capitalizacion);
           }
         },
       );

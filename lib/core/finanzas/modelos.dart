@@ -103,7 +103,10 @@ int _dias(DateTime a, DateTime b) => DateTime.utc(b.year, b.month, b.day)
     .difference(DateTime.utc(a.year, a.month, a.day))
     .inDays;
 
-/// Instrumento de inversión con interés compuesto mensual.
+/// Cada cuándo se paga y se reinvierte el rendimiento. Se guarda por índice.
+enum Capitalizacion { diaria, semanal, mensual, anual }
+
+/// Instrumento de inversión con interés compuesto.
 class Inversion {
   const Inversion({
     required this.id,
@@ -112,6 +115,7 @@ class Inversion {
     required this.tasaAnual,
     this.aporteMensual = 0,
     this.institucion = '',
+    this.capitalizacion = Capitalizacion.mensual,
   });
 
   final String id;
@@ -120,6 +124,8 @@ class Inversion {
 
   /// Banco o casa de bolsa; vacío si no se indicó.
   final String institucion;
+
+  final Capitalizacion capitalizacion;
 
   /// Tasa nominal anual como fracción: 0.08 = 8 %.
   final double tasaAnual;
@@ -137,6 +143,9 @@ class TarjetaCredito {
     this.pagoMinimoPorcentaje = 0.05,
     this.pagoMinimoFijo = 0,
     this.institucion = '',
+    this.diaCorte,
+    this.diaPago,
+    this.pagoSinIntereses,
   });
 
   final String id;
@@ -145,6 +154,16 @@ class TarjetaCredito {
 
   /// Banco que emite la tarjeta; vacío si no se indicó.
   final String institucion;
+
+  /// Día del mes (1 a 31) en que cierra el periodo; `null` si no se indicó.
+  final int? diaCorte;
+
+  /// Día del mes (1 a 31) límite para pagar; `null` si no se indicó.
+  final int? diaPago;
+
+  /// Pago para no generar intereses según el estado de cuenta. Puede ser
+  /// menor al saldo si hay compras a meses sin intereses. `null` = el saldo.
+  final Centavos? pagoSinIntereses;
 
   /// Tasa nominal anual como fracción: 0.45 = 45 %.
   final double tasaAnual;
@@ -166,6 +185,7 @@ class Cuenta {
     required this.tipo,
     required this.saldo,
     this.tasaAnual = 0,
+    this.capitalizacion = Capitalizacion.mensual,
   });
 
   final String id;
@@ -176,6 +196,8 @@ class Cuenta {
 
   /// Rendimiento anual de una cuenta de ahorro, como fracción.
   final double tasaAnual;
+
+  final Capitalizacion capitalizacion;
 }
 
 /// Inflación anual que usa el simulador si no se indica otra.

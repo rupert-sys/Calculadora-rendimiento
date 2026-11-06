@@ -8,6 +8,7 @@ import '../../data/proveedores.dart';
 import '../comun/campo_institucion.dart';
 import '../comun/campos.dart';
 import '../comun/movimientos_ligados.dart';
+import '../comun/rendimientos.dart';
 
 /// Crea o edita una inversión y muestra cuánto valdrá en el tiempo.
 class InversionFormScreen extends ConsumerStatefulWidget {
@@ -27,6 +28,7 @@ class _InversionFormScreenState extends ConsumerState<InversionFormScreen> {
   late final TextEditingController _saldo;
   late final TextEditingController _tasa;
   late final TextEditingController _aporte;
+  late Capitalizacion _capitalizacion;
 
   @override
   void initState() {
@@ -40,6 +42,7 @@ class _InversionFormScreenState extends ConsumerState<InversionFormScreen> {
     _tasa = TextEditingController(
       text: i == null ? '' : (i.tasaAnual * 100).toStringAsFixed(2),
     );
+    _capitalizacion = i?.capitalizacion ?? Capitalizacion.mensual;
     _aporte = TextEditingController(
       text: i == null ? '0' : aUnidades(i.aporteMensual).toStringAsFixed(2),
     );
@@ -69,6 +72,7 @@ class _InversionFormScreenState extends ConsumerState<InversionFormScreen> {
       tasaAnual: tasa / 100,
       aporteMensual: aCentavos(aporte),
       institucion: _institucion.text.trim(),
+      capitalizacion: _capitalizacion,
     );
   }
 
@@ -136,6 +140,11 @@ class _InversionFormScreenState extends ConsumerState<InversionFormScreen> {
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 16),
+            CampoCapitalizacion(
+              valor: _capitalizacion,
+              onChanged: (c) => setState(() => _capitalizacion = c),
+            ),
+            const SizedBox(height: 16),
             CampoNumero(
               controller: _aporte,
               etiqueta: 'Aporte mensual (MXN)',
@@ -143,7 +152,15 @@ class _InversionFormScreenState extends ConsumerState<InversionFormScreen> {
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 24),
-            if (actual != null) _Proyeccion(inversion: actual),
+            if (actual != null) ...[
+              TarjetaRendimientos(
+                saldo: actual.saldoInicial,
+                tasaAnual: actual.tasaAnual,
+                capitalizacion: actual.capitalizacion,
+              ),
+              const SizedBox(height: 8),
+              _Proyeccion(inversion: actual),
+            ],
             const SizedBox(height: 24),
             FilledButton(onPressed: _guardar, child: const Text('Guardar')),
             if (widget.inversion != null) ...[

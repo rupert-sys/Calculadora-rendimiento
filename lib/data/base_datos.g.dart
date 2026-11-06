@@ -529,6 +529,14 @@ class $InversionesTable extends Inversiones
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       defaultValue: const Constant(''));
+  static const VerificationMeta _capitalizacionMeta =
+      const VerificationMeta('capitalizacion');
+  @override
+  late final GeneratedColumn<int> capitalizacion = GeneratedColumn<int>(
+      'capitalizacion', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(2));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -536,7 +544,8 @@ class $InversionesTable extends Inversiones
         saldoInicialCentavos,
         tasaAnual,
         aporteMensualCentavos,
-        institucion
+        institucion,
+        capitalizacion
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -587,6 +596,12 @@ class $InversionesTable extends Inversiones
           institucion.isAcceptableOrUnknown(
               data['institucion']!, _institucionMeta));
     }
+    if (data.containsKey('capitalizacion')) {
+      context.handle(
+          _capitalizacionMeta,
+          capitalizacion.isAcceptableOrUnknown(
+              data['capitalizacion']!, _capitalizacionMeta));
+    }
     return context;
   }
 
@@ -608,6 +623,8 @@ class $InversionesTable extends Inversiones
           DriftSqlType.int, data['${effectivePrefix}aporte_mensual_centavos'])!,
       institucion: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}institucion'])!,
+      capitalizacion: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}capitalizacion'])!,
     );
   }
 
@@ -624,13 +641,15 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
   final double tasaAnual;
   final int aporteMensualCentavos;
   final String institucion;
+  final int capitalizacion;
   const InversionFila(
       {required this.id,
       required this.nombre,
       required this.saldoInicialCentavos,
       required this.tasaAnual,
       required this.aporteMensualCentavos,
-      required this.institucion});
+      required this.institucion,
+      required this.capitalizacion});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -640,6 +659,7 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
     map['tasa_anual'] = Variable<double>(tasaAnual);
     map['aporte_mensual_centavos'] = Variable<int>(aporteMensualCentavos);
     map['institucion'] = Variable<String>(institucion);
+    map['capitalizacion'] = Variable<int>(capitalizacion);
     return map;
   }
 
@@ -651,6 +671,7 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
       tasaAnual: Value(tasaAnual),
       aporteMensualCentavos: Value(aporteMensualCentavos),
       institucion: Value(institucion),
+      capitalizacion: Value(capitalizacion),
     );
   }
 
@@ -666,6 +687,7 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
       aporteMensualCentavos:
           serializer.fromJson<int>(json['aporteMensualCentavos']),
       institucion: serializer.fromJson<String>(json['institucion']),
+      capitalizacion: serializer.fromJson<int>(json['capitalizacion']),
     );
   }
   @override
@@ -678,6 +700,7 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
       'tasaAnual': serializer.toJson<double>(tasaAnual),
       'aporteMensualCentavos': serializer.toJson<int>(aporteMensualCentavos),
       'institucion': serializer.toJson<String>(institucion),
+      'capitalizacion': serializer.toJson<int>(capitalizacion),
     };
   }
 
@@ -687,7 +710,8 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
           int? saldoInicialCentavos,
           double? tasaAnual,
           int? aporteMensualCentavos,
-          String? institucion}) =>
+          String? institucion,
+          int? capitalizacion}) =>
       InversionFila(
         id: id ?? this.id,
         nombre: nombre ?? this.nombre,
@@ -696,6 +720,7 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
         aporteMensualCentavos:
             aporteMensualCentavos ?? this.aporteMensualCentavos,
         institucion: institucion ?? this.institucion,
+        capitalizacion: capitalizacion ?? this.capitalizacion,
       );
   InversionFila copyWithCompanion(InversionesCompanion data) {
     return InversionFila(
@@ -710,6 +735,9 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
           : this.aporteMensualCentavos,
       institucion:
           data.institucion.present ? data.institucion.value : this.institucion,
+      capitalizacion: data.capitalizacion.present
+          ? data.capitalizacion.value
+          : this.capitalizacion,
     );
   }
 
@@ -721,14 +749,15 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
           ..write('saldoInicialCentavos: $saldoInicialCentavos, ')
           ..write('tasaAnual: $tasaAnual, ')
           ..write('aporteMensualCentavos: $aporteMensualCentavos, ')
-          ..write('institucion: $institucion')
+          ..write('institucion: $institucion, ')
+          ..write('capitalizacion: $capitalizacion')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(id, nombre, saldoInicialCentavos, tasaAnual,
-      aporteMensualCentavos, institucion);
+      aporteMensualCentavos, institucion, capitalizacion);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -738,7 +767,8 @@ class InversionFila extends DataClass implements Insertable<InversionFila> {
           other.saldoInicialCentavos == this.saldoInicialCentavos &&
           other.tasaAnual == this.tasaAnual &&
           other.aporteMensualCentavos == this.aporteMensualCentavos &&
-          other.institucion == this.institucion);
+          other.institucion == this.institucion &&
+          other.capitalizacion == this.capitalizacion);
 }
 
 class InversionesCompanion extends UpdateCompanion<InversionFila> {
@@ -748,6 +778,7 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
   final Value<double> tasaAnual;
   final Value<int> aporteMensualCentavos;
   final Value<String> institucion;
+  final Value<int> capitalizacion;
   final Value<int> rowid;
   const InversionesCompanion({
     this.id = const Value.absent(),
@@ -756,6 +787,7 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
     this.tasaAnual = const Value.absent(),
     this.aporteMensualCentavos = const Value.absent(),
     this.institucion = const Value.absent(),
+    this.capitalizacion = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   InversionesCompanion.insert({
@@ -765,6 +797,7 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
     required double tasaAnual,
     required int aporteMensualCentavos,
     this.institucion = const Value.absent(),
+    this.capitalizacion = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         nombre = Value(nombre),
@@ -778,6 +811,7 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
     Expression<double>? tasaAnual,
     Expression<int>? aporteMensualCentavos,
     Expression<String>? institucion,
+    Expression<int>? capitalizacion,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -789,6 +823,7 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
       if (aporteMensualCentavos != null)
         'aporte_mensual_centavos': aporteMensualCentavos,
       if (institucion != null) 'institucion': institucion,
+      if (capitalizacion != null) 'capitalizacion': capitalizacion,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -800,6 +835,7 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
       Value<double>? tasaAnual,
       Value<int>? aporteMensualCentavos,
       Value<String>? institucion,
+      Value<int>? capitalizacion,
       Value<int>? rowid}) {
     return InversionesCompanion(
       id: id ?? this.id,
@@ -809,6 +845,7 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
       aporteMensualCentavos:
           aporteMensualCentavos ?? this.aporteMensualCentavos,
       institucion: institucion ?? this.institucion,
+      capitalizacion: capitalizacion ?? this.capitalizacion,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -835,6 +872,9 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
     if (institucion.present) {
       map['institucion'] = Variable<String>(institucion.value);
     }
+    if (capitalizacion.present) {
+      map['capitalizacion'] = Variable<int>(capitalizacion.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -850,6 +890,7 @@ class InversionesCompanion extends UpdateCompanion<InversionFila> {
           ..write('tasaAnual: $tasaAnual, ')
           ..write('aporteMensualCentavos: $aporteMensualCentavos, ')
           ..write('institucion: $institucion, ')
+          ..write('capitalizacion: $capitalizacion, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -904,6 +945,24 @@ class $TarjetasTable extends Tarjetas
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       defaultValue: const Constant(''));
+  static const VerificationMeta _diaCorteMeta =
+      const VerificationMeta('diaCorte');
+  @override
+  late final GeneratedColumn<int> diaCorte = GeneratedColumn<int>(
+      'dia_corte', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _diaPagoMeta =
+      const VerificationMeta('diaPago');
+  @override
+  late final GeneratedColumn<int> diaPago = GeneratedColumn<int>(
+      'dia_pago', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _pagoSinInteresesCentavosMeta =
+      const VerificationMeta('pagoSinInteresesCentavos');
+  @override
+  late final GeneratedColumn<int> pagoSinInteresesCentavos =
+      GeneratedColumn<int>('pago_sin_intereses_centavos', aliasedName, true,
+          type: DriftSqlType.int, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -912,7 +971,10 @@ class $TarjetasTable extends Tarjetas
         tasaAnual,
         pagoMinimoPorcentaje,
         pagoMinimoFijoCentavos,
-        institucion
+        institucion,
+        diaCorte,
+        diaPago,
+        pagoSinInteresesCentavos
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -971,6 +1033,21 @@ class $TarjetasTable extends Tarjetas
           institucion.isAcceptableOrUnknown(
               data['institucion']!, _institucionMeta));
     }
+    if (data.containsKey('dia_corte')) {
+      context.handle(_diaCorteMeta,
+          diaCorte.isAcceptableOrUnknown(data['dia_corte']!, _diaCorteMeta));
+    }
+    if (data.containsKey('dia_pago')) {
+      context.handle(_diaPagoMeta,
+          diaPago.isAcceptableOrUnknown(data['dia_pago']!, _diaPagoMeta));
+    }
+    if (data.containsKey('pago_sin_intereses_centavos')) {
+      context.handle(
+          _pagoSinInteresesCentavosMeta,
+          pagoSinInteresesCentavos.isAcceptableOrUnknown(
+              data['pago_sin_intereses_centavos']!,
+              _pagoSinInteresesCentavosMeta));
+    }
     return context;
   }
 
@@ -996,6 +1073,13 @@ class $TarjetasTable extends Tarjetas
           data['${effectivePrefix}pago_minimo_fijo_centavos'])!,
       institucion: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}institucion'])!,
+      diaCorte: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}dia_corte']),
+      diaPago: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}dia_pago']),
+      pagoSinInteresesCentavos: attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}pago_sin_intereses_centavos']),
     );
   }
 
@@ -1013,6 +1097,9 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
   final double pagoMinimoPorcentaje;
   final int pagoMinimoFijoCentavos;
   final String institucion;
+  final int? diaCorte;
+  final int? diaPago;
+  final int? pagoSinInteresesCentavos;
   const TarjetaFila(
       {required this.id,
       required this.nombre,
@@ -1020,7 +1107,10 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
       required this.tasaAnual,
       required this.pagoMinimoPorcentaje,
       required this.pagoMinimoFijoCentavos,
-      required this.institucion});
+      required this.institucion,
+      this.diaCorte,
+      this.diaPago,
+      this.pagoSinInteresesCentavos});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1031,6 +1121,16 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
     map['pago_minimo_porcentaje'] = Variable<double>(pagoMinimoPorcentaje);
     map['pago_minimo_fijo_centavos'] = Variable<int>(pagoMinimoFijoCentavos);
     map['institucion'] = Variable<String>(institucion);
+    if (!nullToAbsent || diaCorte != null) {
+      map['dia_corte'] = Variable<int>(diaCorte);
+    }
+    if (!nullToAbsent || diaPago != null) {
+      map['dia_pago'] = Variable<int>(diaPago);
+    }
+    if (!nullToAbsent || pagoSinInteresesCentavos != null) {
+      map['pago_sin_intereses_centavos'] =
+          Variable<int>(pagoSinInteresesCentavos);
+    }
     return map;
   }
 
@@ -1043,6 +1143,15 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
       pagoMinimoPorcentaje: Value(pagoMinimoPorcentaje),
       pagoMinimoFijoCentavos: Value(pagoMinimoFijoCentavos),
       institucion: Value(institucion),
+      diaCorte: diaCorte == null && nullToAbsent
+          ? const Value.absent()
+          : Value(diaCorte),
+      diaPago: diaPago == null && nullToAbsent
+          ? const Value.absent()
+          : Value(diaPago),
+      pagoSinInteresesCentavos: pagoSinInteresesCentavos == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pagoSinInteresesCentavos),
     );
   }
 
@@ -1059,6 +1168,10 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
       pagoMinimoFijoCentavos:
           serializer.fromJson<int>(json['pagoMinimoFijoCentavos']),
       institucion: serializer.fromJson<String>(json['institucion']),
+      diaCorte: serializer.fromJson<int?>(json['diaCorte']),
+      diaPago: serializer.fromJson<int?>(json['diaPago']),
+      pagoSinInteresesCentavos:
+          serializer.fromJson<int?>(json['pagoSinInteresesCentavos']),
     );
   }
   @override
@@ -1072,6 +1185,10 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
       'pagoMinimoPorcentaje': serializer.toJson<double>(pagoMinimoPorcentaje),
       'pagoMinimoFijoCentavos': serializer.toJson<int>(pagoMinimoFijoCentavos),
       'institucion': serializer.toJson<String>(institucion),
+      'diaCorte': serializer.toJson<int?>(diaCorte),
+      'diaPago': serializer.toJson<int?>(diaPago),
+      'pagoSinInteresesCentavos':
+          serializer.toJson<int?>(pagoSinInteresesCentavos),
     };
   }
 
@@ -1082,7 +1199,10 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
           double? tasaAnual,
           double? pagoMinimoPorcentaje,
           int? pagoMinimoFijoCentavos,
-          String? institucion}) =>
+          String? institucion,
+          Value<int?> diaCorte = const Value.absent(),
+          Value<int?> diaPago = const Value.absent(),
+          Value<int?> pagoSinInteresesCentavos = const Value.absent()}) =>
       TarjetaFila(
         id: id ?? this.id,
         nombre: nombre ?? this.nombre,
@@ -1092,6 +1212,11 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
         pagoMinimoFijoCentavos:
             pagoMinimoFijoCentavos ?? this.pagoMinimoFijoCentavos,
         institucion: institucion ?? this.institucion,
+        diaCorte: diaCorte.present ? diaCorte.value : this.diaCorte,
+        diaPago: diaPago.present ? diaPago.value : this.diaPago,
+        pagoSinInteresesCentavos: pagoSinInteresesCentavos.present
+            ? pagoSinInteresesCentavos.value
+            : this.pagoSinInteresesCentavos,
       );
   TarjetaFila copyWithCompanion(TarjetasCompanion data) {
     return TarjetaFila(
@@ -1109,6 +1234,11 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
           : this.pagoMinimoFijoCentavos,
       institucion:
           data.institucion.present ? data.institucion.value : this.institucion,
+      diaCorte: data.diaCorte.present ? data.diaCorte.value : this.diaCorte,
+      diaPago: data.diaPago.present ? data.diaPago.value : this.diaPago,
+      pagoSinInteresesCentavos: data.pagoSinInteresesCentavos.present
+          ? data.pagoSinInteresesCentavos.value
+          : this.pagoSinInteresesCentavos,
     );
   }
 
@@ -1121,14 +1251,26 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
           ..write('tasaAnual: $tasaAnual, ')
           ..write('pagoMinimoPorcentaje: $pagoMinimoPorcentaje, ')
           ..write('pagoMinimoFijoCentavos: $pagoMinimoFijoCentavos, ')
-          ..write('institucion: $institucion')
+          ..write('institucion: $institucion, ')
+          ..write('diaCorte: $diaCorte, ')
+          ..write('diaPago: $diaPago, ')
+          ..write('pagoSinInteresesCentavos: $pagoSinInteresesCentavos')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, nombre, saldoCentavos, tasaAnual,
-      pagoMinimoPorcentaje, pagoMinimoFijoCentavos, institucion);
+  int get hashCode => Object.hash(
+      id,
+      nombre,
+      saldoCentavos,
+      tasaAnual,
+      pagoMinimoPorcentaje,
+      pagoMinimoFijoCentavos,
+      institucion,
+      diaCorte,
+      diaPago,
+      pagoSinInteresesCentavos);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1139,7 +1281,10 @@ class TarjetaFila extends DataClass implements Insertable<TarjetaFila> {
           other.tasaAnual == this.tasaAnual &&
           other.pagoMinimoPorcentaje == this.pagoMinimoPorcentaje &&
           other.pagoMinimoFijoCentavos == this.pagoMinimoFijoCentavos &&
-          other.institucion == this.institucion);
+          other.institucion == this.institucion &&
+          other.diaCorte == this.diaCorte &&
+          other.diaPago == this.diaPago &&
+          other.pagoSinInteresesCentavos == this.pagoSinInteresesCentavos);
 }
 
 class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
@@ -1150,6 +1295,9 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
   final Value<double> pagoMinimoPorcentaje;
   final Value<int> pagoMinimoFijoCentavos;
   final Value<String> institucion;
+  final Value<int?> diaCorte;
+  final Value<int?> diaPago;
+  final Value<int?> pagoSinInteresesCentavos;
   final Value<int> rowid;
   const TarjetasCompanion({
     this.id = const Value.absent(),
@@ -1159,6 +1307,9 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
     this.pagoMinimoPorcentaje = const Value.absent(),
     this.pagoMinimoFijoCentavos = const Value.absent(),
     this.institucion = const Value.absent(),
+    this.diaCorte = const Value.absent(),
+    this.diaPago = const Value.absent(),
+    this.pagoSinInteresesCentavos = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TarjetasCompanion.insert({
@@ -1169,6 +1320,9 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
     required double pagoMinimoPorcentaje,
     required int pagoMinimoFijoCentavos,
     this.institucion = const Value.absent(),
+    this.diaCorte = const Value.absent(),
+    this.diaPago = const Value.absent(),
+    this.pagoSinInteresesCentavos = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         nombre = Value(nombre),
@@ -1184,6 +1338,9 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
     Expression<double>? pagoMinimoPorcentaje,
     Expression<int>? pagoMinimoFijoCentavos,
     Expression<String>? institucion,
+    Expression<int>? diaCorte,
+    Expression<int>? diaPago,
+    Expression<int>? pagoSinInteresesCentavos,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1196,6 +1353,10 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
       if (pagoMinimoFijoCentavos != null)
         'pago_minimo_fijo_centavos': pagoMinimoFijoCentavos,
       if (institucion != null) 'institucion': institucion,
+      if (diaCorte != null) 'dia_corte': diaCorte,
+      if (diaPago != null) 'dia_pago': diaPago,
+      if (pagoSinInteresesCentavos != null)
+        'pago_sin_intereses_centavos': pagoSinInteresesCentavos,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1208,6 +1369,9 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
       Value<double>? pagoMinimoPorcentaje,
       Value<int>? pagoMinimoFijoCentavos,
       Value<String>? institucion,
+      Value<int?>? diaCorte,
+      Value<int?>? diaPago,
+      Value<int?>? pagoSinInteresesCentavos,
       Value<int>? rowid}) {
     return TarjetasCompanion(
       id: id ?? this.id,
@@ -1218,6 +1382,10 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
       pagoMinimoFijoCentavos:
           pagoMinimoFijoCentavos ?? this.pagoMinimoFijoCentavos,
       institucion: institucion ?? this.institucion,
+      diaCorte: diaCorte ?? this.diaCorte,
+      diaPago: diaPago ?? this.diaPago,
+      pagoSinInteresesCentavos:
+          pagoSinInteresesCentavos ?? this.pagoSinInteresesCentavos,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1248,6 +1416,16 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
     if (institucion.present) {
       map['institucion'] = Variable<String>(institucion.value);
     }
+    if (diaCorte.present) {
+      map['dia_corte'] = Variable<int>(diaCorte.value);
+    }
+    if (diaPago.present) {
+      map['dia_pago'] = Variable<int>(diaPago.value);
+    }
+    if (pagoSinInteresesCentavos.present) {
+      map['pago_sin_intereses_centavos'] =
+          Variable<int>(pagoSinInteresesCentavos.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1264,6 +1442,9 @@ class TarjetasCompanion extends UpdateCompanion<TarjetaFila> {
           ..write('pagoMinimoPorcentaje: $pagoMinimoPorcentaje, ')
           ..write('pagoMinimoFijoCentavos: $pagoMinimoFijoCentavos, ')
           ..write('institucion: $institucion, ')
+          ..write('diaCorte: $diaCorte, ')
+          ..write('diaPago: $diaPago, ')
+          ..write('pagoSinInteresesCentavos: $pagoSinInteresesCentavos, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1308,9 +1489,17 @@ class $CuentasTable extends Cuentas with TableInfo<$CuentasTable, CuentaFila> {
   late final GeneratedColumn<double> tasaAnual = GeneratedColumn<double>(
       'tasa_anual', aliasedName, false,
       type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _capitalizacionMeta =
+      const VerificationMeta('capitalizacion');
+  @override
+  late final GeneratedColumn<int> capitalizacion = GeneratedColumn<int>(
+      'capitalizacion', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(2));
   @override
   List<GeneratedColumn> get $columns =>
-      [id, institucion, nombre, tipo, saldoCentavos, tasaAnual];
+      [id, institucion, nombre, tipo, saldoCentavos, tasaAnual, capitalizacion];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1360,6 +1549,12 @@ class $CuentasTable extends Cuentas with TableInfo<$CuentasTable, CuentaFila> {
     } else if (isInserting) {
       context.missing(_tasaAnualMeta);
     }
+    if (data.containsKey('capitalizacion')) {
+      context.handle(
+          _capitalizacionMeta,
+          capitalizacion.isAcceptableOrUnknown(
+              data['capitalizacion']!, _capitalizacionMeta));
+    }
     return context;
   }
 
@@ -1381,6 +1576,8 @@ class $CuentasTable extends Cuentas with TableInfo<$CuentasTable, CuentaFila> {
           .read(DriftSqlType.int, data['${effectivePrefix}saldo_centavos'])!,
       tasaAnual: attachedDatabase.typeMapping
           .read(DriftSqlType.double, data['${effectivePrefix}tasa_anual'])!,
+      capitalizacion: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}capitalizacion'])!,
     );
   }
 
@@ -1397,13 +1594,15 @@ class CuentaFila extends DataClass implements Insertable<CuentaFila> {
   final int tipo;
   final int saldoCentavos;
   final double tasaAnual;
+  final int capitalizacion;
   const CuentaFila(
       {required this.id,
       required this.institucion,
       required this.nombre,
       required this.tipo,
       required this.saldoCentavos,
-      required this.tasaAnual});
+      required this.tasaAnual,
+      required this.capitalizacion});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1413,6 +1612,7 @@ class CuentaFila extends DataClass implements Insertable<CuentaFila> {
     map['tipo'] = Variable<int>(tipo);
     map['saldo_centavos'] = Variable<int>(saldoCentavos);
     map['tasa_anual'] = Variable<double>(tasaAnual);
+    map['capitalizacion'] = Variable<int>(capitalizacion);
     return map;
   }
 
@@ -1424,6 +1624,7 @@ class CuentaFila extends DataClass implements Insertable<CuentaFila> {
       tipo: Value(tipo),
       saldoCentavos: Value(saldoCentavos),
       tasaAnual: Value(tasaAnual),
+      capitalizacion: Value(capitalizacion),
     );
   }
 
@@ -1437,6 +1638,7 @@ class CuentaFila extends DataClass implements Insertable<CuentaFila> {
       tipo: serializer.fromJson<int>(json['tipo']),
       saldoCentavos: serializer.fromJson<int>(json['saldoCentavos']),
       tasaAnual: serializer.fromJson<double>(json['tasaAnual']),
+      capitalizacion: serializer.fromJson<int>(json['capitalizacion']),
     );
   }
   @override
@@ -1449,6 +1651,7 @@ class CuentaFila extends DataClass implements Insertable<CuentaFila> {
       'tipo': serializer.toJson<int>(tipo),
       'saldoCentavos': serializer.toJson<int>(saldoCentavos),
       'tasaAnual': serializer.toJson<double>(tasaAnual),
+      'capitalizacion': serializer.toJson<int>(capitalizacion),
     };
   }
 
@@ -1458,7 +1661,8 @@ class CuentaFila extends DataClass implements Insertable<CuentaFila> {
           String? nombre,
           int? tipo,
           int? saldoCentavos,
-          double? tasaAnual}) =>
+          double? tasaAnual,
+          int? capitalizacion}) =>
       CuentaFila(
         id: id ?? this.id,
         institucion: institucion ?? this.institucion,
@@ -1466,6 +1670,7 @@ class CuentaFila extends DataClass implements Insertable<CuentaFila> {
         tipo: tipo ?? this.tipo,
         saldoCentavos: saldoCentavos ?? this.saldoCentavos,
         tasaAnual: tasaAnual ?? this.tasaAnual,
+        capitalizacion: capitalizacion ?? this.capitalizacion,
       );
   CuentaFila copyWithCompanion(CuentasCompanion data) {
     return CuentaFila(
@@ -1478,6 +1683,9 @@ class CuentaFila extends DataClass implements Insertable<CuentaFila> {
           ? data.saldoCentavos.value
           : this.saldoCentavos,
       tasaAnual: data.tasaAnual.present ? data.tasaAnual.value : this.tasaAnual,
+      capitalizacion: data.capitalizacion.present
+          ? data.capitalizacion.value
+          : this.capitalizacion,
     );
   }
 
@@ -1489,14 +1697,15 @@ class CuentaFila extends DataClass implements Insertable<CuentaFila> {
           ..write('nombre: $nombre, ')
           ..write('tipo: $tipo, ')
           ..write('saldoCentavos: $saldoCentavos, ')
-          ..write('tasaAnual: $tasaAnual')
+          ..write('tasaAnual: $tasaAnual, ')
+          ..write('capitalizacion: $capitalizacion')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, institucion, nombre, tipo, saldoCentavos, tasaAnual);
+  int get hashCode => Object.hash(
+      id, institucion, nombre, tipo, saldoCentavos, tasaAnual, capitalizacion);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1506,7 +1715,8 @@ class CuentaFila extends DataClass implements Insertable<CuentaFila> {
           other.nombre == this.nombre &&
           other.tipo == this.tipo &&
           other.saldoCentavos == this.saldoCentavos &&
-          other.tasaAnual == this.tasaAnual);
+          other.tasaAnual == this.tasaAnual &&
+          other.capitalizacion == this.capitalizacion);
 }
 
 class CuentasCompanion extends UpdateCompanion<CuentaFila> {
@@ -1516,6 +1726,7 @@ class CuentasCompanion extends UpdateCompanion<CuentaFila> {
   final Value<int> tipo;
   final Value<int> saldoCentavos;
   final Value<double> tasaAnual;
+  final Value<int> capitalizacion;
   final Value<int> rowid;
   const CuentasCompanion({
     this.id = const Value.absent(),
@@ -1524,6 +1735,7 @@ class CuentasCompanion extends UpdateCompanion<CuentaFila> {
     this.tipo = const Value.absent(),
     this.saldoCentavos = const Value.absent(),
     this.tasaAnual = const Value.absent(),
+    this.capitalizacion = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   CuentasCompanion.insert({
@@ -1533,6 +1745,7 @@ class CuentasCompanion extends UpdateCompanion<CuentaFila> {
     required int tipo,
     required int saldoCentavos,
     required double tasaAnual,
+    this.capitalizacion = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         institucion = Value(institucion),
@@ -1547,6 +1760,7 @@ class CuentasCompanion extends UpdateCompanion<CuentaFila> {
     Expression<int>? tipo,
     Expression<int>? saldoCentavos,
     Expression<double>? tasaAnual,
+    Expression<int>? capitalizacion,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1556,6 +1770,7 @@ class CuentasCompanion extends UpdateCompanion<CuentaFila> {
       if (tipo != null) 'tipo': tipo,
       if (saldoCentavos != null) 'saldo_centavos': saldoCentavos,
       if (tasaAnual != null) 'tasa_anual': tasaAnual,
+      if (capitalizacion != null) 'capitalizacion': capitalizacion,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1567,6 +1782,7 @@ class CuentasCompanion extends UpdateCompanion<CuentaFila> {
       Value<int>? tipo,
       Value<int>? saldoCentavos,
       Value<double>? tasaAnual,
+      Value<int>? capitalizacion,
       Value<int>? rowid}) {
     return CuentasCompanion(
       id: id ?? this.id,
@@ -1575,6 +1791,7 @@ class CuentasCompanion extends UpdateCompanion<CuentaFila> {
       tipo: tipo ?? this.tipo,
       saldoCentavos: saldoCentavos ?? this.saldoCentavos,
       tasaAnual: tasaAnual ?? this.tasaAnual,
+      capitalizacion: capitalizacion ?? this.capitalizacion,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1600,6 +1817,9 @@ class CuentasCompanion extends UpdateCompanion<CuentaFila> {
     if (tasaAnual.present) {
       map['tasa_anual'] = Variable<double>(tasaAnual.value);
     }
+    if (capitalizacion.present) {
+      map['capitalizacion'] = Variable<int>(capitalizacion.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1615,6 +1835,7 @@ class CuentasCompanion extends UpdateCompanion<CuentaFila> {
           ..write('tipo: $tipo, ')
           ..write('saldoCentavos: $saldoCentavos, ')
           ..write('tasaAnual: $tasaAnual, ')
+          ..write('capitalizacion: $capitalizacion, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1882,6 +2103,7 @@ typedef $$InversionesTableCreateCompanionBuilder = InversionesCompanion
   required double tasaAnual,
   required int aporteMensualCentavos,
   Value<String> institucion,
+  Value<int> capitalizacion,
   Value<int> rowid,
 });
 typedef $$InversionesTableUpdateCompanionBuilder = InversionesCompanion
@@ -1892,6 +2114,7 @@ typedef $$InversionesTableUpdateCompanionBuilder = InversionesCompanion
   Value<double> tasaAnual,
   Value<int> aporteMensualCentavos,
   Value<String> institucion,
+  Value<int> capitalizacion,
   Value<int> rowid,
 });
 
@@ -1923,6 +2146,10 @@ class $$InversionesTableFilterComposer
 
   ColumnFilters<String> get institucion => $composableBuilder(
       column: $table.institucion, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get capitalizacion => $composableBuilder(
+      column: $table.capitalizacion,
+      builder: (column) => ColumnFilters(column));
 }
 
 class $$InversionesTableOrderingComposer
@@ -1953,6 +2180,10 @@ class $$InversionesTableOrderingComposer
 
   ColumnOrderings<String> get institucion => $composableBuilder(
       column: $table.institucion, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get capitalizacion => $composableBuilder(
+      column: $table.capitalizacion,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$InversionesTableAnnotationComposer
@@ -1981,6 +2212,9 @@ class $$InversionesTableAnnotationComposer
 
   GeneratedColumn<String> get institucion => $composableBuilder(
       column: $table.institucion, builder: (column) => column);
+
+  GeneratedColumn<int> get capitalizacion => $composableBuilder(
+      column: $table.capitalizacion, builder: (column) => column);
 }
 
 class $$InversionesTableTableManager extends RootTableManager<
@@ -2015,6 +2249,7 @@ class $$InversionesTableTableManager extends RootTableManager<
             Value<double> tasaAnual = const Value.absent(),
             Value<int> aporteMensualCentavos = const Value.absent(),
             Value<String> institucion = const Value.absent(),
+            Value<int> capitalizacion = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               InversionesCompanion(
@@ -2024,6 +2259,7 @@ class $$InversionesTableTableManager extends RootTableManager<
             tasaAnual: tasaAnual,
             aporteMensualCentavos: aporteMensualCentavos,
             institucion: institucion,
+            capitalizacion: capitalizacion,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -2033,6 +2269,7 @@ class $$InversionesTableTableManager extends RootTableManager<
             required double tasaAnual,
             required int aporteMensualCentavos,
             Value<String> institucion = const Value.absent(),
+            Value<int> capitalizacion = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               InversionesCompanion.insert(
@@ -2042,6 +2279,7 @@ class $$InversionesTableTableManager extends RootTableManager<
             tasaAnual: tasaAnual,
             aporteMensualCentavos: aporteMensualCentavos,
             institucion: institucion,
+            capitalizacion: capitalizacion,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
@@ -2078,6 +2316,9 @@ typedef $$TarjetasTableCreateCompanionBuilder = TarjetasCompanion Function({
   required double pagoMinimoPorcentaje,
   required int pagoMinimoFijoCentavos,
   Value<String> institucion,
+  Value<int?> diaCorte,
+  Value<int?> diaPago,
+  Value<int?> pagoSinInteresesCentavos,
   Value<int> rowid,
 });
 typedef $$TarjetasTableUpdateCompanionBuilder = TarjetasCompanion Function({
@@ -2088,6 +2329,9 @@ typedef $$TarjetasTableUpdateCompanionBuilder = TarjetasCompanion Function({
   Value<double> pagoMinimoPorcentaje,
   Value<int> pagoMinimoFijoCentavos,
   Value<String> institucion,
+  Value<int?> diaCorte,
+  Value<int?> diaPago,
+  Value<int?> pagoSinInteresesCentavos,
   Value<int> rowid,
 });
 
@@ -2122,6 +2366,16 @@ class $$TarjetasTableFilterComposer
 
   ColumnFilters<String> get institucion => $composableBuilder(
       column: $table.institucion, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get diaCorte => $composableBuilder(
+      column: $table.diaCorte, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get diaPago => $composableBuilder(
+      column: $table.diaPago, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get pagoSinInteresesCentavos => $composableBuilder(
+      column: $table.pagoSinInteresesCentavos,
+      builder: (column) => ColumnFilters(column));
 }
 
 class $$TarjetasTableOrderingComposer
@@ -2156,6 +2410,16 @@ class $$TarjetasTableOrderingComposer
 
   ColumnOrderings<String> get institucion => $composableBuilder(
       column: $table.institucion, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get diaCorte => $composableBuilder(
+      column: $table.diaCorte, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get diaPago => $composableBuilder(
+      column: $table.diaPago, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get pagoSinInteresesCentavos => $composableBuilder(
+      column: $table.pagoSinInteresesCentavos,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$TarjetasTableAnnotationComposer
@@ -2187,6 +2451,15 @@ class $$TarjetasTableAnnotationComposer
 
   GeneratedColumn<String> get institucion => $composableBuilder(
       column: $table.institucion, builder: (column) => column);
+
+  GeneratedColumn<int> get diaCorte =>
+      $composableBuilder(column: $table.diaCorte, builder: (column) => column);
+
+  GeneratedColumn<int> get diaPago =>
+      $composableBuilder(column: $table.diaPago, builder: (column) => column);
+
+  GeneratedColumn<int> get pagoSinInteresesCentavos => $composableBuilder(
+      column: $table.pagoSinInteresesCentavos, builder: (column) => column);
 }
 
 class $$TarjetasTableTableManager extends RootTableManager<
@@ -2219,6 +2492,9 @@ class $$TarjetasTableTableManager extends RootTableManager<
             Value<double> pagoMinimoPorcentaje = const Value.absent(),
             Value<int> pagoMinimoFijoCentavos = const Value.absent(),
             Value<String> institucion = const Value.absent(),
+            Value<int?> diaCorte = const Value.absent(),
+            Value<int?> diaPago = const Value.absent(),
+            Value<int?> pagoSinInteresesCentavos = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               TarjetasCompanion(
@@ -2229,6 +2505,9 @@ class $$TarjetasTableTableManager extends RootTableManager<
             pagoMinimoPorcentaje: pagoMinimoPorcentaje,
             pagoMinimoFijoCentavos: pagoMinimoFijoCentavos,
             institucion: institucion,
+            diaCorte: diaCorte,
+            diaPago: diaPago,
+            pagoSinInteresesCentavos: pagoSinInteresesCentavos,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -2239,6 +2518,9 @@ class $$TarjetasTableTableManager extends RootTableManager<
             required double pagoMinimoPorcentaje,
             required int pagoMinimoFijoCentavos,
             Value<String> institucion = const Value.absent(),
+            Value<int?> diaCorte = const Value.absent(),
+            Value<int?> diaPago = const Value.absent(),
+            Value<int?> pagoSinInteresesCentavos = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               TarjetasCompanion.insert(
@@ -2249,6 +2531,9 @@ class $$TarjetasTableTableManager extends RootTableManager<
             pagoMinimoPorcentaje: pagoMinimoPorcentaje,
             pagoMinimoFijoCentavos: pagoMinimoFijoCentavos,
             institucion: institucion,
+            diaCorte: diaCorte,
+            diaPago: diaPago,
+            pagoSinInteresesCentavos: pagoSinInteresesCentavos,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
@@ -2281,6 +2566,7 @@ typedef $$CuentasTableCreateCompanionBuilder = CuentasCompanion Function({
   required int tipo,
   required int saldoCentavos,
   required double tasaAnual,
+  Value<int> capitalizacion,
   Value<int> rowid,
 });
 typedef $$CuentasTableUpdateCompanionBuilder = CuentasCompanion Function({
@@ -2290,6 +2576,7 @@ typedef $$CuentasTableUpdateCompanionBuilder = CuentasCompanion Function({
   Value<int> tipo,
   Value<int> saldoCentavos,
   Value<double> tasaAnual,
+  Value<int> capitalizacion,
   Value<int> rowid,
 });
 
@@ -2319,6 +2606,10 @@ class $$CuentasTableFilterComposer
 
   ColumnFilters<double> get tasaAnual => $composableBuilder(
       column: $table.tasaAnual, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get capitalizacion => $composableBuilder(
+      column: $table.capitalizacion,
+      builder: (column) => ColumnFilters(column));
 }
 
 class $$CuentasTableOrderingComposer
@@ -2348,6 +2639,10 @@ class $$CuentasTableOrderingComposer
 
   ColumnOrderings<double> get tasaAnual => $composableBuilder(
       column: $table.tasaAnual, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get capitalizacion => $composableBuilder(
+      column: $table.capitalizacion,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$CuentasTableAnnotationComposer
@@ -2376,6 +2671,9 @@ class $$CuentasTableAnnotationComposer
 
   GeneratedColumn<double> get tasaAnual =>
       $composableBuilder(column: $table.tasaAnual, builder: (column) => column);
+
+  GeneratedColumn<int> get capitalizacion => $composableBuilder(
+      column: $table.capitalizacion, builder: (column) => column);
 }
 
 class $$CuentasTableTableManager extends RootTableManager<
@@ -2407,6 +2705,7 @@ class $$CuentasTableTableManager extends RootTableManager<
             Value<int> tipo = const Value.absent(),
             Value<int> saldoCentavos = const Value.absent(),
             Value<double> tasaAnual = const Value.absent(),
+            Value<int> capitalizacion = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               CuentasCompanion(
@@ -2416,6 +2715,7 @@ class $$CuentasTableTableManager extends RootTableManager<
             tipo: tipo,
             saldoCentavos: saldoCentavos,
             tasaAnual: tasaAnual,
+            capitalizacion: capitalizacion,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -2425,6 +2725,7 @@ class $$CuentasTableTableManager extends RootTableManager<
             required int tipo,
             required int saldoCentavos,
             required double tasaAnual,
+            Value<int> capitalizacion = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               CuentasCompanion.insert(
@@ -2434,6 +2735,7 @@ class $$CuentasTableTableManager extends RootTableManager<
             tipo: tipo,
             saldoCentavos: saldoCentavos,
             tasaAnual: tasaAnual,
+            capitalizacion: capitalizacion,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0

@@ -1,6 +1,7 @@
 import 'package:calculadora_rendimiento/core/finanzas/finanzas.dart';
 import 'package:calculadora_rendimiento/data/base_datos.dart';
 import 'package:calculadora_rendimiento/data/cuentas_repositorio.dart';
+import 'package:calculadora_rendimiento/data/inversiones_repositorio.dart';
 import 'package:calculadora_rendimiento/data/movimientos_repositorio.dart';
 import 'package:calculadora_rendimiento/data/tarjetas_repositorio.dart';
 import 'package:drift/native.dart';
@@ -114,6 +115,71 @@ void main() {
     expect(m.cuentaId, isNull);
     final t = (await TarjetasRepositorio(vieja).observarTodas().first).single;
     expect(t.institucion, '');
+    expect(t.diaCorte, isNull);
+    expect(t.pagoSinIntereses, isNull);
     expect(await CuentasRepositorio(vieja).observarTodas().first, isEmpty);
+  });
+
+  test('migra una base de la versión 3 con cuentas', () async {
+    final vieja = BaseDatos(NativeDatabase.memory(setup: (raw) {
+      raw.execute('CREATE TABLE movimientos (id TEXT NOT NULL, '
+          'tipo INTEGER NOT NULL, descripcion TEXT NOT NULL, '
+          'monto_centavos INTEGER NOT NULL, categoria_id TEXT NOT NULL, '
+          'frecuencia INTEGER NOT NULL, fecha_inicio INTEGER NOT NULL, '
+          'fecha_fin INTEGER NULL, cuenta_id TEXT NULL, PRIMARY KEY (id))');
+      raw.execute('CREATE TABLE inversiones (id TEXT NOT NULL, '
+          'nombre TEXT NOT NULL, saldo_inicial_centavos INTEGER NOT NULL, '
+          'tasa_anual REAL NOT NULL, aporte_mensual_centavos INTEGER NOT NULL, '
+          "institucion TEXT NOT NULL DEFAULT '', PRIMARY KEY (id))");
+      raw.execute('CREATE TABLE tarjetas (id TEXT NOT NULL, '
+          'nombre TEXT NOT NULL, saldo_centavos INTEGER NOT NULL, '
+          'tasa_anual REAL NOT NULL, pago_minimo_porcentaje REAL NOT NULL, '
+          'pago_minimo_fijo_centavos INTEGER NOT NULL, '
+          "institucion TEXT NOT NULL DEFAULT '', PRIMARY KEY (id))");
+      raw.execute('CREATE TABLE cuentas (id TEXT NOT NULL, '
+          'institucion TEXT NOT NULL, nombre TEXT NOT NULL, '
+          'tipo INTEGER NOT NULL, saldo_centavos INTEGER NOT NULL, '
+          'tasa_anual REAL NOT NULL, PRIMARY KEY (id))');
+      raw.execute("INSERT INTO cuentas VALUES ('c1', 'Nu', 'Cajita', 1, "
+          '100000, 0.12)');
+      raw.execute("INSERT INTO inversiones VALUES ('i1', 'Cetes', 100000, "
+          "0.1, 0, 'GBM')");
+      raw.execute('PRAGMA user_version = 3');
+    }));
+    addTearDown(vieja.close);
+
+    final c = (await CuentasRepositorio(vieja).observarTodas().first).single;
+    expect(c.nombre, 'Cajita');
+    expect(c.capitalizacion, Capitalizacion.mensual);
+    final i =
+        (await InversionesRepositorio(vieja).observarTodas().first).single;
+    expect(i.institucion, 'GBM');
+    expect(i.capitalizacion, Capitalizacion.mensual);
+  });
+
+  test('guarda capitalización y fechas de tarjeta', () async {
+    await InversionesRepositorio(db).guardar(const Inversion(
+      id: 'i',
+      nombre: 'Nu',
+      saldoInicial: 100,
+      tasaAnual: 0.1,
+      capitalizacion: Capitalizacion.diaria,
+    ));
+    expect(
+        (await InversionesRepositorio(db).observarTodas().first)
+            .single
+            .capitalizacion,
+        Capitalizacion.diaria);
+    await TarjetasRepositorio(db).guardar(const TarjetaCredito(
+      id: 't',
+      nombre: 'Oro',
+      saldo: 1000,
+      tasaAnual: 0.4,
+      diaCorte: 15,
+      diaPago: 5,
+      pagoSinIntereses: 600,
+    ));
+    final t = (await TarjetasRepositorio(db).observarTodas().first).single;
+    expect([t.diaCorte, t.diaPago, t.pagoSinIntereses], [15, 5, 600]);
   });
 }

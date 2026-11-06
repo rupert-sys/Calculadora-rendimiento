@@ -17,6 +17,9 @@ Widget _app(BaseDatos db) => ProviderScope(
 
 void main() {
   testWidgets('agregar una cuenta la muestra bajo su banco', (tester) async {
+    tester.view.physicalSize = const Size(800, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final db = BaseDatos(NativeDatabase.memory());
     await tester.pumpWidget(_app(db));
     await tester.pumpAndSettle();

@@ -27,6 +27,9 @@ class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
   late final TextEditingController _tasa;
   late final TextEditingController _minimoPct;
   late final TextEditingController _minimoFijo;
+  late final TextEditingController _sinIntereses;
+  int? _diaCorte;
+  int? _diaPago;
   final _pagoFijo = TextEditingController();
 
   @override
@@ -47,6 +50,14 @@ class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
     _minimoFijo = TextEditingController(
       text: aUnidades(t?.pagoMinimoFijo ?? 0).toStringAsFixed(2),
     );
+    final sinIntereses = t?.pagoSinIntereses;
+    _sinIntereses = TextEditingController(
+      text: sinIntereses == null
+          ? ''
+          : aUnidades(sinIntereses).toStringAsFixed(2),
+    );
+    _diaCorte = t?.diaCorte;
+    _diaPago = t?.diaPago;
   }
 
   @override
@@ -58,6 +69,7 @@ class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
       _tasa,
       _minimoPct,
       _minimoFijo,
+      _sinIntereses,
       _pagoFijo
     ]) {
       c.dispose();
@@ -73,6 +85,9 @@ class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
     if (saldo == null || tasa == null || pct == null || fijo == null) {
       return null;
     }
+    final sinIntereses = _sinIntereses.text.trim().isEmpty
+        ? null
+        : leerMonto(_sinIntereses.text);
     return TarjetaCredito(
       id: widget.tarjeta?.id ??
           DateTime.now().microsecondsSinceEpoch.toString(),
@@ -82,6 +97,9 @@ class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
       pagoMinimoPorcentaje: pct / 100,
       pagoMinimoFijo: aCentavos(fijo),
       institucion: _institucion.text.trim(),
+      diaCorte: _diaCorte,
+      diaPago: _diaPago,
+      pagoSinIntereses: sinIntereses == null ? null : aCentavos(sinIntereses),
     );
   }
 
@@ -139,9 +157,52 @@ class _TarjetaFormScreenState extends ConsumerState<TarjetaFormScreen> {
             const SizedBox(height: 16),
             CampoNumero(
               controller: _saldo,
-              etiqueta: 'Saldo a pagar (MXN)',
+              etiqueta: 'Saldo total (MXN)',
               prefijo: r'$ ',
               onChanged: refrescar,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _sinIntereses,
+              decoration: const InputDecoration(
+                labelText: 'Pago para no generar intereses (MXN)',
+                prefixText: r'$ ',
+                helperText:
+                    'Viene en tu estado de cuenta. Vacío = el saldo total',
+              ),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              onChanged: refrescar,
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) return null;
+                final n = leerMonto(v);
+                if (n == null) return 'Escribe un número';
+                final saldo = leerMonto(_saldo.text);
+                if (saldo != null && n > saldo) {
+                  return 'No puede ser mayor al saldo total';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _CampoDia(
+                    etiqueta: 'Día de corte',
+                    valor: _diaCorte,
+                    onChanged: (d) => setState(() => _diaCorte = d),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _CampoDia(
+                    etiqueta: 'Día límite de pago',
+                    valor: _diaPago,
+                    onChanged: (d) => setState(() => _diaPago = d),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             CampoNumero(
@@ -276,6 +337,34 @@ class _Opcion extends StatelessWidget {
       ),
       isThreeLine: lineas.length > 1,
       trailing: r.seSalda ? Text(formatearPesos(r.pagadoTotal)) : null,
+    );
+  }
+}
+
+/// Día del mes, de 1 a 31, o sin indicar.
+class _CampoDia extends StatelessWidget {
+  const _CampoDia({
+    required this.etiqueta,
+    required this.valor,
+    required this.onChanged,
+  });
+
+  final String etiqueta;
+  final int? valor;
+  final ValueChanged<int?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<int?>(
+      initialValue: valor,
+      isExpanded: true,
+      decoration: InputDecoration(labelText: etiqueta),
+      items: [
+        const DropdownMenuItem(value: null, child: Text('Sin indicar')),
+        for (var d = 1; d <= 31; d++)
+          DropdownMenuItem(value: d, child: Text('$d')),
+      ],
+      onChanged: onChanged,
     );
   }
 }
